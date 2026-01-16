@@ -32,51 +32,68 @@ Students work in teams to design, implement, and evaluate AI persona systems tha
 
 ## Course Structure
 
-### Phase 1: Foundation & Persona Development (Weeks 1-10)
-- Research and design thinking
-- Persona specification and use case definition
-- Data collection and curation pipelines
-- Domain adaptive training implementation
-- Initial persona prototyping
+### Phase 1: Foundation & Setup (Weeks 1-3)
+- Project kickoff and technical foundations
+- Team formation and Leidos partnership introduction
+- Development environment setup
+- Literature review and landscape analysis
+- Initial evaluation plan
 
-### Phase 2: Agentic UI Platform (Weeks 11-15)
-- MCP tool integration and API development
+### Phase 2: Persona Development & Data Pipeline (Weeks 4-10)
+- Use case identification and persona specifications
+- Dataset discovery, selection, and documentation
+- Data preparation and cleaning pipeline
+- Domain Adaptive Training (DAPT) implementation
+- Initial persona prototypes and validation
+
+### Phase 3: Agentic UI Platform Development (Weeks 11-15)
 - Streamlit-based conversational interface
-- Multi-turn dialogue management
-- Memory and context handling
-- System integration and testing
+- Model Context Protocol (MCP) tool integration
+- Conversation history and memory management
+- Multi-persona support and task management
+- System integration and end-to-end testing
 
-### Phase 3: Evaluation & Refinement (Weeks 16-20)
-- Metrics development and implementation
-- Human evaluation studies
-- Performance benchmarking
-- Final system optimization
-- Presentation and demonstration
+### Phase 4: Metrics, Evaluation & Iteration (Weeks 16-18)
+- Comprehensive evaluation framework implementation
+- Human-AI comparison studies
+- Statistical analysis and validation
+- Two iteration sprints for refinement
+- Performance optimization
+
+### Phase 5: Documentation, Polish & Presentation (Weeks 19-20)
+- Complete project documentation
+- Final demo preparation and rehearsal
+- UI polish and bug fixes
+- Stakeholder presentations
+- Project reflection and future roadmap
 
 ---
 
 ## Repository Structure
 
 ```
-capstone/
+capstone-ai-personas/
 ├── README.md
-├── docs/                           # Documentation
+├── docs/                           # Documentation (Phase 1 & 5)
 │   ├── project-requirements.md
 │   ├── technology-stack.md
-│   └── weekly-objectives.md
-├── personas/                       # Persona development workstream
+│   ├── weekly-objectives.md
+│   └── meeting-notes/              # Leidos mentor calls
+├── personas/                       # Phase 2: Persona dev workstream
 │   ├── specifications/             # Persona design documents
 │   ├── datasets/                   # Training and evaluation data
 │   ├── training/                   # DAPT scripts and configs
 │   └── prototypes/                 # Early persona implementations
-├── platform/                       # Agentic UI workstream
+├── platform/                       # Phase 3: Agentic UI workstream
 │   ├── mcp-tools/                  # MCP integrations
 │   ├── ui/                         # Streamlit applications
 │   ├── api/                        # Backend services
+│   ├── memory/                     # Context management
 │   └── tests/                      # Integration tests
-├── evaluation/                     # Metrics workstream
+├── evaluation/                     # Phase 4: Metrics workstream
 │   ├── metrics/                    # Evaluation code
 │   ├── benchmarks/                 # Benchmark datasets
+│   ├── studies/                    # Human evaluation protocols
 │   ├── results/                    # Evaluation outputs
 │   └── analysis/                   # Performance analysis
 ├── resources/                      # Shared resources
@@ -84,9 +101,12 @@ capstone/
 │   ├── tutorials/                  # Learning materials
 │   └── templates/                  # Code templates
 └── deliverables/                   # Weekly submissions
-    ├── week-04/
-    ├── week-05/
-    └── ...
+    ├── week-01-team-charter/
+    ├── week-04-persona-spec/
+    ├── week-10-dapt-model/
+    ├── week-15-platform-demo/
+    ├── week-18-evaluation-report/
+    └── week-20-final-presentation/
 ```
 
 ---
@@ -95,7 +115,7 @@ capstone/
 
 ### Prerequisites
 - Python 3.10+
-- API keys for LLM providers (Claude, OpenAI, etc.)
+- Ollama
 - Git and GitHub account
 - Basic understanding of NLP and conversational AI
 
@@ -103,8 +123,8 @@ capstone/
 
 ```bash
 # Clone the repository
-git clone https://github.com/greg-katsios/capstone.git
-cd capstone
+git clone https://github.com/your-org/capstone-ai-personas.git
+cd capstone-ai-personas
 
 # Create virtual environment
 python -m venv venv
@@ -175,3 +195,7 @@ See [docs/weekly-objectives.md](docs/weekly-objectives.md) for detailed requirem
 ## License
 
 This project is created for educational purposes as part of the capstone course.
+
+---
+
+**Last Updated:** January 2026
