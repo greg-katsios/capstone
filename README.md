@@ -63,8 +63,7 @@ capstone/
 ├── docs/                           # Documentation
 │   ├── project-requirements.md
 │   ├── technology-stack.md
-│   ├── weekly-objectives.md
-│   └── evaluation-metrics.md
+│   └── weekly-objectives.md
 ├── personas/                       # Persona development workstream
 │   ├── specifications/             # Persona design documents
 │   ├── datasets/                   # Training and evaluation data
