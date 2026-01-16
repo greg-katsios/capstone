@@ -195,7 +195,3 @@ See [docs/weekly-objectives.md](docs/weekly-objectives.md) for detailed requirem
 ## License
 
 This project is created for educational purposes as part of the capstone course.
-
----
-
-**Last Updated:** January 2026
