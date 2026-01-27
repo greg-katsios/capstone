@@ -1,0 +1,14 @@
+# DAPT Demo Dependencies
+
+# Core libraries
+transformers>=4.36.0
+peft>=0.7.0
+torch>=2.0.0
+datasets>=2.14.0
+
+# For progress bars and utilities
+tqdm>=4.65.0
+accelerate>=0.25.0
+
+# Optional: for model evaluation
+evaluate>=0.4.0
