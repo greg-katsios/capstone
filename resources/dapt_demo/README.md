@@ -90,7 +90,6 @@ That's it! No special formatting needed.
 
 - **[SETUP.md](SETUP.md)** - Complete installation guide
 - **[EXERCISES.md](EXERCISES.md)** - 5 student exercises
-- **[TEACHING_GUIDE.md](TEACHING_GUIDE.md)** - For instructors
 
 ---
 
@@ -125,7 +124,3 @@ That's it! No special formatting needed.
 1. Run the demo: `python adapt_model.py`
 2. Try Exercise 1: Adapt to your own domain
 3. Read EXERCISES.md for more challenges
-
----
-
-**Made for students learning domain adaptation** • Free & open-source
