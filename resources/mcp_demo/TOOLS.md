@@ -328,4 +328,3 @@ These influence all responses!
 - **Setup problems:** [SETUP.md](SETUP.md)
 - **Don't understand MCP:** [README.md](README.md)
 - **Want exercises:** [EXERCISES.md](EXERCISES.md)
-- **Teaching:** [TEACHING_GUIDE.md](TEACHING_GUIDE.md)
