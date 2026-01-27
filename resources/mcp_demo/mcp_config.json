@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "research-participant": {
+      "command": "python",
+      "args": ["participant_server.py"]
+    }
+  }
+}

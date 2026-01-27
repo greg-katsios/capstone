@@ -1,0 +1,5 @@
+# MCP Server Dependencies for Behavioral Research Demo
+
+# Core MCP SDK
+mcp>=1.2.0
+
