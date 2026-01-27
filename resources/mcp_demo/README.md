@@ -78,10 +78,6 @@ These traits influence all their responses!
 - **[EXERCISES.md](EXERCISES.md)** - 7 hands-on exercises
 - **[TOOLS.md](TOOLS.md)** - Guide to all testing tools
 
-**For Instructors:**
-- **[DEMO_SCRIPT.md](DEMO_SCRIPT.md)** - 15-minute demo script
-- **[TEACHING_GUIDE.md](TEACHING_GUIDE.md)** - Full teaching guide
-
 ---
 
 ## Important Notes
@@ -105,7 +101,6 @@ These traits influence all their responses!
 1. **Setup issues?** → Read [SETUP.md](SETUP.md)
 2. **Don't know what to do?** → Try [EXERCISES.md](EXERCISES.md)
 3. **Want to chat with AI?** → See [TOOLS.md](TOOLS.md) for Ollama setup
-4. **Teaching this?** → Check [TEACHING_GUIDE.md](TEACHING_GUIDE.md)
 
 ---
 
@@ -116,7 +111,3 @@ These traits influence all their responses!
 - No API keys needed
 - No subscriptions needed
 - Works 100% offline (after setup)
-
----
-
-**Made for students learning behavioral research methods** • Free & open-source
