@@ -58,10 +58,6 @@ Complete these exercises to learn how to use MCP for behavioral research.
 3. How do their values (fairness, trust) compare?
 4. Did their responses match their personality? How?
 
-### Deliverable
-
-Screenshot of successfully calling all 4 tools.
-
 ---
 
 ## Exercise 2: Trust Game Experiment (45 minutes)
@@ -115,13 +111,6 @@ The trust game:
 3. Look at their fairness value (0.80). Does their behavior match?
 4. Look at their trust value (0.65). Does their behavior match?
 
-### Deliverable
-
-1-page report with:
-- Hypothesis
-- Results table (condition vs. amount returned)
-- Analysis
-
 ---
 
 ## Exercise 3: Modify the Participant (60 minutes)
@@ -168,10 +157,6 @@ The trust game:
 1. How did agreeableness affect trust game returns?
 2. How did it affect survey responses?
 3. Which trait had the biggest impact on behavior?
-
-### Deliverable
-
-Comparison table showing how each profile responded.
 
 ---
 
@@ -251,10 +236,6 @@ elif name == "play_ultimatum_game":
 2. Does this match their fairness value?
 3. How could you improve this simulation?
 
-### Deliverable
-
-Working code + test results for 3 different splits.
-
 ---
 
 ## Exercise 5: Multiple Participants (90 minutes)
@@ -286,10 +267,6 @@ Working code + test results for 3 different splits.
 3. How much variance was there in responses?
 4. What are the limitations of this simulation?
 
-### Deliverable
-
-Data table + 2-page analysis with charts.
-
 ---
 
 ## Exercise 6: Survey Design (45 minutes)
@@ -319,12 +296,6 @@ Data table + 2-page analysis with charts.
 2. Why were they problematic?
 3. How did you improve them?
 4. What did this teach you about survey design?
-
-### Deliverable
-
-- Original survey
-- Revised survey
-- 1-page reflection on what you learned
 
 ---
 
