@@ -50,14 +50,6 @@ Learn domain adaptation through hands-on practice.
 3. Did the model's predictions improve? How?
 4. What domain-specific terms appear in adapted output?
 
-### Deliverable
-
-1-page report with:
-- Domain description
-- Example training texts (3-5)
-- Before/after predictions comparison
-- Analysis of improvement
-
 ---
 
 ## Exercise 2: LoRA Configuration Experiment (45 minutes)
@@ -96,17 +88,6 @@ LoRA has key hyperparameters:
 3. What's the tradeoff between rank and speed?
 4. When would you use low vs high rank?
 
-### Deliverable
-
-Comparison table:
-| Config | r | Trainable Params | Time | Quality Score |
-|--------|---|------------------|------|---------------|
-| Low    | 4 | X | Xs | 3/5 |
-| Default| 8 | Y | Ys | 4/5 |
-| High   | 16| Z | Zs | 5/5 |
-
-+ 1-page analysis
-
 ---
 
 ## Exercise 3: Compare Multiple Domains (90 minutes)
@@ -141,14 +122,6 @@ Comparison table:
 2. Does a medical-adapted model work on law text?
 3. What happens when domains are too different?
 4. Is it better to have general or specialized model?
-
-### Deliverable
-
-3-page report with:
-- Training data description for each domain
-- Prediction examples from each model
-- Cross-domain test results
-- Analysis and conclusions
 
 ---
 
@@ -195,14 +168,6 @@ Comparison table:
 3. What % improvement did you achieve?
 4. Does lower perplexity mean better model?
 
-### Deliverable
-
-Technical report with:
-- Methodology description
-- Perplexity calculations
-- Improvement statistics
-- Discussion of limitations
-
 ---
 
 ## Exercise 5: Production-Ready Adaptation (120 minutes)
@@ -248,15 +213,6 @@ Technical report with:
    - Training configuration
    - Evaluation results
    - Usage instructions
-
-### Deliverable
-
-Complete project with:
-- All data files
-- Modified script
-- README explaining the model
-- Evaluation report
-- Usage examples
 
 ---
 
