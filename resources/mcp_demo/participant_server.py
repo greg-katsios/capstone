@@ -12,9 +12,18 @@ can be used in behavioral research.
 import json
 import random
 from typing import Any
+from pydantic import AnyUrl
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent, Resource, INVALID_PARAMS, INTERNAL_ERROR
+from mcp.types import (
+    Tool,
+    TextContent,
+    Resource,
+    INVALID_PARAMS,
+    INTERNAL_ERROR,
+    TextResourceContents,
+    ReadResourceResult
+)
 
 
 # Simulated Participant Profile
@@ -62,15 +71,16 @@ async def list_resources() -> list[Resource]:
 
 
 @server.read_resource()
-async def read_resource(uri: str) -> str:
+async def read_resource(uri: AnyUrl) -> str:
     """
     Read a specific resource.
     Returns the participant profile as JSON.
     """
-    if uri == "participant://profile":
+    uri_str = str(uri)
+    if uri_str == "participant://profile":
         return json.dumps(PARTICIPANT, indent=2)
     else:
-        raise ValueError(f"Unknown resource: {uri}")
+        raise ValueError(f"Unknown resource: {uri_str}")
 
 
 @server.list_tools()

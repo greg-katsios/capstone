@@ -18,37 +18,31 @@ Complete these exercises to learn how to use MCP for behavioral research.
 2. **View the participant profile:**
    - Click "Resources" tab
    - Click "participant://profile"
+   - Click "Read" button
    - Read the demographics, personality, and values
 
 3. **Test each question type:**
+   - Click "Tools" tab
+   - Select "conduct_survey" from the dropdown
 
    **Yes/No Question:**
-   ```json
-   {
-     "question": "Do you trust AI systems?",
-     "question_type": "yes_no"
-   }
-   ```
+   - question (text field): "Do you trust AI systems?"
+   - question_type (dropdown): Select "yes_no"
+   - Click "Call Tool"
 
    **Likert Scale:**
-   ```json
-   {
-     "question": "How much do you support environmental policies?",
-     "question_type": "likert"
-   }
-   ```
+   - question (text field): "How much do you support environmental policies?"
+   - question_type (dropdown): Select "likert"
+   - Click "Call Tool"
 
    **Open-ended:**
-   ```json
-   {
-     "question": "What motivates you at work?",
-     "question_type": "open_ended"
-   }
-   ```
+   - question (text field): "What motivates you at work?"
+   - question_type (dropdown): Select "open_ended"
+   - Click "Call Tool"
 
 4. **Check history:**
-   - Click "get_interaction_history" tool
-   - Call it (no parameters needed)
+   - Select "get_interaction_history" tool from dropdown
+   - Click "Call Tool" (no parameters needed)
    - See all your interactions
 
 ### Questions to Answer
@@ -57,6 +51,10 @@ Complete these exercises to learn how to use MCP for behavioral research.
 2. What personality trait is lowest?
 3. How do their values (fairness, trust) compare?
 4. Did their responses match their personality? How?
+
+### Deliverable
+
+Screenshot of successfully calling all 4 tools.
 
 ---
 
@@ -75,30 +73,25 @@ The trust game:
 ### Steps
 
 1. **Run baseline (no context):**
-   ```json
-   {
-     "amount_sent": 50
-   }
-   ```
-   Record how much they return.
+   - Select "play_trust_game" from the Tools dropdown
+   - amount_sent: 50
+   - context: (leave empty)
+   - Click "Call Tool"
+   - Record how much they return.
 
 2. **Run with positive framing:**
-   ```json
-   {
-     "amount_sent": 50,
-     "context": "Studies show cooperation benefits everyone"
-   }
-   ```
-   Record how much they return.
+   - Select "play_trust_game" again
+   - amount_sent: 50
+   - context: "Studies show cooperation benefits everyone"
+   - Click "Call Tool"
+   - Record how much they return.
 
 3. **Run with negative framing:**
-   ```json
-   {
-     "amount_sent": 50,
-     "context": "There's a 50% chance all money will be lost"
-   }
-   ```
-   Record how much they return.
+   - Select "play_trust_game" again
+   - amount_sent: 50
+   - context: "There's a 50% chance all money will be lost"
+   - Click "Call Tool"
+   - Record how much they return.
 
 4. **Try different amounts:**
    - Send $25, then $75
@@ -110,6 +103,13 @@ The trust game:
 2. Did framing affect their decision?
 3. Look at their fairness value (0.80). Does their behavior match?
 4. Look at their trust value (0.65). Does their behavior match?
+
+### Deliverable
+
+1-page report with:
+- Hypothesis
+- Results table (condition vs. amount returned)
+- Analysis
 
 ---
 
@@ -157,6 +157,10 @@ The trust game:
 1. How did agreeableness affect trust game returns?
 2. How did it affect survey responses?
 3. Which trait had the biggest impact on behavior?
+
+### Deliverable
+
+Comparison table showing how each profile responded.
 
 ---
 
@@ -236,6 +240,10 @@ elif name == "play_ultimatum_game":
 2. Does this match their fairness value?
 3. How could you improve this simulation?
 
+### Deliverable
+
+Working code + test results for 3 different splits.
+
 ---
 
 ## Exercise 5: Multiple Participants (90 minutes)
@@ -267,6 +275,10 @@ elif name == "play_ultimatum_game":
 3. How much variance was there in responses?
 4. What are the limitations of this simulation?
 
+### Deliverable
+
+Data table + 2-page analysis with charts.
+
 ---
 
 ## Exercise 6: Survey Design (45 minutes)
@@ -296,6 +308,12 @@ elif name == "play_ultimatum_game":
 2. Why were they problematic?
 3. How did you improve them?
 4. What did this teach you about survey design?
+
+### Deliverable
+
+- Original survey
+- Revised survey
+- 1-page reflection on what you learned
 
 ---
 

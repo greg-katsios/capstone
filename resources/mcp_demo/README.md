@@ -10,7 +10,7 @@ This demo creates a **simulated research participant** you can interview, survey
 - Learning research methods
 - Understanding how AI can help with research
 
-**Cost:** $0 (completely free and open-source)
+**Cost:** $0 - Completely free and open source (no subscriptions, no API keys, no paid services)
 
 ---
 
@@ -42,9 +42,11 @@ This opens a browser where you can:
 ### 3. Try It
 
 In the inspector:
-1. Click "Resources" → "participant://profile" to see who you're talking to
-2. Click "Tools" → "conduct_survey"
-3. Enter: `{"question": "Do you support climate action?", "question_type": "yes_no"}`
+1. Click "Resources" → "participant://profile" → "Read" to see who you're talking to
+2. Click "Tools" → Select "conduct_survey" from the dropdown
+3. Fill in the form:
+   - **question**: "Do you support climate action?"
+   - **question_type**: Select "yes_no" from dropdown
 4. Click "Call Tool" and see the response!
 
 ---
@@ -78,6 +80,10 @@ These traits influence all their responses!
 - **[EXERCISES.md](EXERCISES.md)** - 7 hands-on exercises
 - **[TOOLS.md](TOOLS.md)** - Guide to all testing tools
 
+**For Instructors:**
+- **[DEMO_SCRIPT.md](DEMO_SCRIPT.md)** - 15-minute demo script
+- **[TEACHING_GUIDE.md](TEACHING_GUIDE.md)** - Full teaching guide
+
 ---
 
 ## Important Notes
@@ -101,13 +107,20 @@ These traits influence all their responses!
 1. **Setup issues?** → Read [SETUP.md](SETUP.md)
 2. **Don't know what to do?** → Try [EXERCISES.md](EXERCISES.md)
 3. **Want to chat with AI?** → See [TOOLS.md](TOOLS.md) for Ollama setup
+4. **Teaching this?** → Check [TEACHING_GUIDE.md](TEACHING_GUIDE.md)
 
 ---
 
 ## Requirements
 
 - Python 3.10+
-- Node.js (for testing)
+- Node.js (for MCP Inspector)
+- **100% Free & Open Source**
 - No API keys needed
 - No subscriptions needed
-- Works 100% offline (after setup)
+- No paid services required
+- Works completely offline (after initial setup)
+
+---
+
+**Made for students learning behavioral research methods** • Free & open-source

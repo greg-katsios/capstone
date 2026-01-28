@@ -82,15 +82,11 @@ npx @modelcontextprotocol/inspector python participant_server.py
 3. Opens browser at `http://localhost:6789`
 
 **What to do:**
-1. Click "Resources" tab → Click "participant://profile" → See participant data
-2. Click "Tools" tab → Click "conduct_survey"
-3. In the JSON box, enter:
-   ```json
-   {
-     "question": "Do you support environmental policies?",
-     "question_type": "yes_no"
-   }
-   ```
+1. Click "Resources" tab → Click "participant://profile" → Click "Read" → See participant data
+2. Click "Tools" tab → Select "conduct_survey" from the dropdown
+3. Fill in the form fields:
+   - **question** (text field): Enter your survey question (e.g., "Do you support environmental policies?")
+   - **question_type** (dropdown): Select "yes_no", "likert", or "open_ended"
 4. Click "Call Tool"
 5. See the response!
 
@@ -138,32 +134,49 @@ Download from [ollama.ai](https://ollama.ai/) and install.
 
 ### Step 2: Download a model
 
+**Important:** Use llama3.1 (NOT llama3.2) for proper tool calling:
+
 ```bash
-ollama pull llama3.2
+ollama pull llama3.1
 ```
 
-This downloads ~2GB. Wait for it to finish.
+This downloads ~5GB. Wait for it to finish.
+
+**Alternative models that work well:**
+- `ollama pull mistral` - Smaller (4GB), also works well
+- `ollama pull qwen2.5` - Another good option
 
 ### Step 3: Install MCP client
 
 ```bash
-npm install -g ollmcp
+pip install ollmcp
 ```
 
 ### Step 4: Run it
 
 ```bash
-ollmcp --model llama3.2 --config mcp_config.json
+ollmcp --mcp-server participant_server.py --model llama3.1
+```
+
+**Note:** Make sure your virtual environment is activated so ollmcp can find the MCP package.
+
+**If you chose a different model:**
+```bash
+ollmcp --mcp-server participant_server.py --model mistral
+# or
+ollmcp --mcp-server participant_server.py --model qwen2.5
 ```
 
 Now you can chat:
 ```
-You: Get the participant's profile
-You: Conduct a survey asking about climate change
-You: Play a trust game with $50
+You: Conduct a survey asking "Do you support climate action?" with question type yes_no
+You: Play a trust game by sending $50 to the participant
+You: Ask them in an interview about their career satisfaction
 ```
 
 The AI will automatically call the right tools!
+
+**Note:** To view the participant's profile (demographics, personality, values), use the MCP Inspector instead - it's stored as a resource, not a tool.
 
 ---
 
@@ -173,8 +186,8 @@ The AI will automatically call the right tools!
 |------|---------|
 | `participant_server.py` | The MCP server (the actual code) |
 | `requirements.txt` | Python packages needed |
-| `mcp_config.json` | Configuration for Ollama client |
 | `test_server.py` | Simple test script (optional) |
+| `verify_functions.py` | Tests server functions work correctly |
 
 ---
 

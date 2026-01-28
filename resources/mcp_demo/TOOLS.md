@@ -1,6 +1,8 @@
 # Testing Tools Guide
 
-There are several free ways to test your MCP server. Choose based on what you want to do.
+**All options below are 100% free and open source** - perfect for students and educational use.
+
+There are several ways to test your MCP server. Choose based on what you want to do.
 
 ---
 
@@ -54,25 +56,46 @@ npx @modelcontextprotocol/inspector python participant_server.py
 
 2. **Download a model:**
    ```bash
-   ollama pull llama3.2
+   ollama pull llama3.1
    ```
 
-   **Important:** Only these models support MCP:
-   - llama3.2 ✅ (2GB)
-   - llama3.1 ✅ (4GB)
-   - qwen2.5 ✅ (4GB)
-   - mistral ✅ (4GB)
+   **Important:** Only these models have good tool calling support:
+   - llama3.1 ✅ (5GB) - **Best for tool calling**
+   - mistral ✅ (4GB) - Good and efficient
+   - qwen2.5 ✅ (4GB) - Also works well
 
-   Don't use: llama2, phi, gemma (old versions)
+   **Don't use:** llama3.2, llama2, phi, gemma (poor tool calling)
 
 3. **Install MCP client:**
    ```bash
-   npm install -g ollmcp
+   pip install ollmcp
    ```
 
 4. **Run it:**
    ```bash
-   ollmcp --model llama3.2 --config mcp_config.json
+   ollmcp --mcp-server participant_server.py --model llama3.1
+   ```
+
+   **Important:** Make sure your virtual environment is activated first!
+
+   **If using different model:**
+   ```bash
+   ollmcp --mcp-server participant_server.py --model mistral
+   ```
+
+5. **First-time setup (in ollmcp):**
+
+   When ollmcp starts, configure these settings:
+
+   ```
+   hil              # Disable Human-in-the-Loop for automatic tool execution
+   ll 5             # Set loop limit to 5 for multi-step tasks
+   show-tool-execution   # Show when tools are being called
+   ```
+
+   Then save your config:
+   ```
+   save-config
    ```
 
 ### What You Get
@@ -82,27 +105,37 @@ npx @modelcontextprotocol/inspector python participant_server.py
 - Realistic research experience
 - 100% free and offline
 
+**Note:** ollmcp works best with **tools** (conduct_survey, play_trust_game, etc.). To view the **participant profile resource**, use the MCP Inspector instead.
+
 ### Example Chat
 
+**Good prompts that work well:**
+
 ```
-You: Get the participant's profile
+You: Conduct a survey asking "Do you support climate action?" with question type yes_no
 
-AI: I'll access the participant's profile for you.
-[Automatically calls the resource]
-This is a 28-year-old non-binary software developer...
+AI: [Calls conduct_survey tool]
+Participant Response: Yes
 
-You: Ask them if they support climate action
+You: Play a trust game by sending $50 to the participant
 
-AI: I'll conduct a survey.
-[Automatically calls conduct_survey with yes_no]
-The participant responded: Yes
+AI: [Calls play_trust_game with amount_sent: 50]
+The participant received $150 and returned $91.25...
 
-You: Play a trust game with $50
+You: Ask them in an interview about their career satisfaction
 
-AI: I'll run the trust game.
-[Automatically calls play_trust_game]
-The participant returned $91.25...
+AI: [Calls conduct_interview with topic: career satisfaction]
+[Simulated interview response based on personality]
+
+You: Show me the interaction history
+
+AI: [Calls get_interaction_history]
+[Shows all previous surveys, games, and interviews]
 ```
+
+**Note:** The participant profile (demographics, personality, values) is a **resource**, not a tool. To view it:
+- Use MCP Inspector: Resources → participant://profile → Read
+- Or describe it manually when chatting: "The participant is 28 years old, non-binary, high openness (0.75)..."
 
 ### Pros/Cons
 
@@ -148,6 +181,8 @@ The participant returned $91.25...
 - Natural conversation
 - Realistic workflow
 - Better for experiments
+- 100% free and open source
+- No internet needed (after setup)
 
 ### For Quick Demo
 → **Use Online Inspector**
@@ -166,16 +201,36 @@ The participant returned $91.25...
 **Inspector doesn't open**
 → Manually go to `http://localhost:6789`
 
-### Ollama
+### Ollama + ollmcp
+
+**"pip: command not found"**
+→ Make sure your virtual environment is activated: `venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Mac/Linux)
 
 **"Model doesn't support tools"**
-→ Use llama3.2, qwen2.5, mistral, or command-r only
+→ Use llama3.1, mistral, or qwen2.5 only (NOT llama3.2)
 
 **"Connection refused"**
 → Start Ollama service: `ollama serve`
 
 **"Out of memory"**
-→ Use smaller model: `ollama pull llama3.2` (2GB)
+→ Use smaller model: `ollama pull mistral` (4GB, most efficient)
+
+**"Cannot find participant_server.py"**
+→ Make sure you run ollmcp from the mcp_demo directory
+
+**"Model outputs JSON instead of calling tools"**
+→ You're using a model without good tool support (like llama3.2)
+→ Switch to llama3.1, mistral, or qwen2.5
+→ Example: `ollmcp --mcp-server participant_server.py --model llama3.1`
+
+**"Model called the wrong tool or made up data"**
+→ Be more specific in your prompts
+→ Example: Instead of "Get the profile", say "Conduct a survey asking about..."
+→ Remember: Profile data is a resource (view in MCP Inspector), tools are for surveys/games/interviews
+
+**"Tools execute but nothing happens"**
+→ Check if Human-in-the-Loop (HIL) is enabled
+→ Type `hil` to toggle it off, or press `d` at the confirmation prompt
 
 ---
 
@@ -183,11 +238,18 @@ The participant returned $91.25...
 
 These are the research tools available in `participant_server.py`:
 
+**Note:** When using the MCP Inspector, you'll see a form interface with text fields and dropdowns instead of having to write JSON manually. The JSON examples below show the parameter structure for reference.
+
 ### conduct_survey
 
 Ask survey questions. Three types supported:
 
-**Parameters:**
+**In MCP Inspector:**
+- Select "conduct_survey" from Tools dropdown
+- **question** (text field): Enter your survey question
+- **question_type** (dropdown): Select "likert", "yes_no", or "open_ended"
+
+**Parameters (JSON reference):**
 ```json
 {
   "question": "Your question here",
@@ -231,20 +293,17 @@ Ask survey questions. Three types supported:
 
 Run a trust game experiment.
 
-**Parameters:**
-```json
-{
-  "amount_sent": 50,
-  "context": "Optional framing text"
-}
-```
+**In MCP Inspector:**
+- Select "play_trust_game" from Tools dropdown
+- **amount_sent** (number field): Enter amount to send (0-100)
+- **context** (text field): Optional framing text (can leave empty)
 
 **Rules:**
 1. You send money (0-100)
 2. Amount is tripled
 3. Participant decides how much to return
 
-**Example:**
+**Parameters (JSON reference):**
 ```json
 {
   "amount_sent": 50,
@@ -271,7 +330,11 @@ Run a trust game experiment.
 
 Have an open-ended conversation.
 
-**Parameters:**
+**In MCP Inspector:**
+- Select "conduct_interview" from Tools dropdown
+- **topic** (text field): Enter the interview topic
+
+**Parameters (JSON reference):**
 ```json
 {
   "topic": "Your topic here"
@@ -291,7 +354,11 @@ Have an open-ended conversation.
 
 ### get_interaction_history
 
-View all past interactions. No parameters needed.
+View all past interactions.
+
+**In MCP Inspector:**
+- Select "get_interaction_history" from Tools dropdown
+- Click "Call Tool" (no parameters needed)
 
 **Response:** JSON array of all interactions (surveys, games, interviews)
 
@@ -299,7 +366,10 @@ View all past interactions. No parameters needed.
 
 ## Participant Profile
 
-Access via Resources → `participant://profile`
+**How to access in MCP Inspector:**
+1. Click "Resources" tab
+2. Click "participant://profile"
+3. Click "Read" button
 
 **Current participant:**
 - **Age:** 28
@@ -328,3 +398,4 @@ These influence all responses!
 - **Setup problems:** [SETUP.md](SETUP.md)
 - **Don't understand MCP:** [README.md](README.md)
 - **Want exercises:** [EXERCISES.md](EXERCISES.md)
+- **Teaching:** [TEACHING_GUIDE.md](TEACHING_GUIDE.md)
