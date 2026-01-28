@@ -79,11 +79,7 @@ These traits influence all their responses!
 - **[SETUP.md](SETUP.md)** - Installation guide (start here!)
 - **[EXERCISES.md](EXERCISES.md)** - 7 hands-on exercises
 - **[TOOLS.md](TOOLS.md)** - Guide to all testing tools
-
-**For Instructors:**
-- **[DEMO_SCRIPT.md](DEMO_SCRIPT.md)** - 15-minute demo script
-- **[TEACHING_GUIDE.md](TEACHING_GUIDE.md)** - Full teaching guide
-
+- 
 ---
 
 ## Important Notes
@@ -120,7 +116,3 @@ These traits influence all their responses!
 - No subscriptions needed
 - No paid services required
 - Works completely offline (after initial setup)
-
----
-
-**Made for students learning behavioral research methods** • Free & open-source
