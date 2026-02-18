@@ -8,7 +8,7 @@ The goal of this exercise is for you to **run a real ML experiment end-to-end** 
 
 ## A Note on Using AI Tools
 
-You will use AI assistance at different levels depending on the phase. This is intentional. Some parts of this exercise are about building genuine understanding — you need to get your hands dirty. Other parts involve specialized implementation details where getting stuck on syntax would waste your time without teaching you anything new. Here's the breakdown:
+You will use AI assistance at different levels depending on the phase. This is intentional. Some parts of this exercise are about building genuine understanding, you need to get your hands dirty. Other parts involve specialized implementation details where getting stuck on syntax would waste your time without teaching you anything new. Here's the breakdown:
 
 | Phase | AI Policy | Why |
 |---|---|---|
@@ -54,7 +54,7 @@ Use a 1–1.5B parameter model. Good choices: `TinyLlama/TinyLlama-1.1B-Chat-v1.
 
 **Suggested hyperparameters:** 3 epochs, batch size 4, learning rate 2e-4, cosine schedule with 50 warmup steps, LoRA rank 16, alpha 32. If you run out of memory, reduce batch size to 2 with gradient accumulation of 2. Log your training loss.
 
-**Why hybrid:** HuggingFace Transformers + PEFT is the standard stack you'll use in industry. You should build real familiarity with it. But there's no learning value in spending 2 hours debugging a padding token mismatch — ask AI and move on.
+**Why hybrid:** HuggingFace Transformers + PEFT is the standard stack you'll use in industry. You should build real familiarity with it. But there's no learning value in spending 2 hours debugging a padding token mismatch; ask AI and move on.
 
 ---
 
@@ -69,14 +69,14 @@ Compute perplexity on your held-out validation stories for both the base model a
 
 ### Metric 2: Narrative Generation Quality (qualitative)
 Give both models the same 5 story-opening prompts (e.g., *"I remember the day when"*, *"That summer my family"*, *"The hardest thing I ever"*). Generate 150 tokens from each. Rate the outputs yourself on a 1–5 scale for:
-- **Emotional specificity** — does it name real feelings, or stay vague?
-- **Temporal grounding** — does it reference concrete times, places, people?
-- **First-person consistency** — does it stay in the narrator's voice?
+- **Emotional specificity** does it name real feelings, or stay vague?
+- **Temporal grounding** does it reference concrete times, places, people?
+- **First-person consistency** does it stay in the narrator's voice?
 
 ### Metric 3: Lexical Analysis (quantitative)
 Using NLTK or spaCy, compare the generated outputs on: (a) frequency of first-person pronouns (I/my/me/we), (b) frequency of past-tense verbs, and (c) type-token ratio. Autobiographical text should show higher rates of first-person pronouns and past tense after adaptation.
 
-**Why AI is fine here:** The value is in interpreting the results — does the perplexity drop confirm what you see qualitatively? Do the lexical shifts match what you'd expect from reading the training data? That's the thinking that matters. Writing a POS-tagger from scratch is not.
+**Why AI is fine here:** The value is in interpreting the results, does the perplexity drop confirm what you see qualitatively? Do the lexical shifts match what you'd expect from reading the training data? That's the thinking that matters. Writing a POS-tagger from scratch is not.
 
 ---
 
@@ -89,16 +89,3 @@ A short writeup (1–2 pages) with:
 - A paragraph reflecting on: What changed? What didn't? Did the metrics agree with each other? What would you do differently with more time or compute?
 
 Include your modified training script.
-
----
-
-## Time Estimate
-
-| Phase | Estimated Time |
-|---|---|
-| Data exploration & preparation | 45–60 min |
-| Training setup & debugging | 60–90 min |
-| Model training (on GPU) | 15–30 min |
-| Evaluation (all three metrics) | 45–60 min |
-| Writeup | 30–45 min |
-| **Total** | **~4–5 hours** |
