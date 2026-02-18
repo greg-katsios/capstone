@@ -20,7 +20,7 @@ More detail on each below.
 
 ---
 
-## Phase 1: Data Preparation — Write Your Own Code
+## Phase 1: Data Preparation (Write Your Own Code)
 
 Download the HippoCorpus dataset from `https://msropendata.com/datasets/0a83fb6f-a759-4a17-aaa2-fbac84577318` (also on HuggingFace at `allenai/hippocorpus`, though it requires manual download). The CSV contains 6,854 diary-like stories in three categories: recalled, imagined, and retold.
 
@@ -37,7 +37,7 @@ Then filter to only `recalled` stories, extract the `story` column, and split 90
 
 ---
 
-## Phase 2: Training — Hybrid Approach
+## Phase 2: Training (Hybrid Approach)
 
 Use a 1–1.5B parameter model. Good choices: `TinyLlama/TinyLlama-1.1B-Chat-v1.0` (1.1B, Llama 2 architecture), `Qwen/Qwen2.5-1.5B`, or `Qwen/Qwen2.5-1.5B-Instruct`.
 
@@ -58,7 +58,7 @@ Use a 1–1.5B parameter model. Good choices: `TinyLlama/TinyLlama-1.1B-Chat-v1.
 
 ---
 
-## Phase 3: Evaluation — AI-Assisted Implementation Is Fine
+## Phase 3: Evaluation (AI-Assisted Implementation)
 
 This is where the experiment pays off. Compare the base model against your adapted model using three metrics. **You should understand what each metric measures and what the results mean.** The implementation code itself can come from AI.
 
