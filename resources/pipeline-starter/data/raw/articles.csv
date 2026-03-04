@@ -1,0 +1,45 @@
+id,Title, body ,category,author,publish_date
+1,Introduction to Machine Learning,"Machine learning is a subset of artificial intelligence that focuses on building systems that learn from data.
+
+These systems improve their performance over time without being explicitly programmed. Common approaches include supervised learning, unsupervised learning, and reinforcement learning.
+
+Supervised learning uses labeled data to train models. The model learns to map inputs to outputs based on example input-output pairs.",tech,Alice Chen,2025-01-15
+2,  Getting Started with Python  ,"Python is one of the most popular programming languages in the world.
+
+It is known for its simple syntax and readability. Python is widely used in web development, data science, and automation.
+
+Many beginners choose Python as their first language because of its gentle learning curve.",tech,Bob Martinez,2025-01-20
+3,Data Cleaning Best Practices,"Data cleaning is the process of detecting and correcting corrupt or inaccurate records.
+
+Common tasks include handling missing values, removing duplicates, and standardizing formats. Good data cleaning is essential for reliable analysis.
+
+Without clean data, even the best models will produce poor results. Always validate your data before training.",tech,Alice Chen,2025-02-01
+4,Introduction to Machine Learning,"Machine learning is a subset of artificial intelligence that focuses on building systems that learn from data.
+
+These systems improve their performance over time without being explicitly programmed. Common approaches include supervised learning, unsupervised learning, and reinforcement learning.
+
+Supervised learning uses labeled data to train models. The model learns to map inputs to outputs based on example input-output pairs.",tech,Alice Chen,2025-01-15
+5,  ,short,tech,Carol Wu,2025-02-10
+6,Understanding Neural Networks,"Neural networks are computing systems inspired by biological neural networks in the brain.
+
+They consist of layers of interconnected nodes that process information. Each connection has a weight that adjusts during training.
+
+Deep learning uses neural networks with many layers to learn complex patterns. Applications include image recognition, natural language processing, and game playing.
+
+The backpropagation algorithm is used to train neural networks by adjusting weights to minimize prediction errors.",science,Dave Johnson,2025-02-15
+7,Quick Tips,,tech,,2025-03-01
+8,The Future of AI,"Artificial intelligence continues to advance rapidly across many domains.
+
+Recent breakthroughs in large language models have transformed how we interact with technology. These models can generate text, answer questions, and assist with coding.
+
+However, important challenges remain around safety, alignment, and responsible deployment. The AI research community is actively working on these problems.",tech,Eve Park,2025-03-10
+9,  Getting Started with Python  ,"Python is one of the most popular programming languages in the world.
+
+It is known for its simple syntax and readability. Python is widely used in web development, data science, and automation.
+
+Many beginners choose Python as their first language because of its gentle learning curve.",tech,Bob Martinez,2025-01-20
+10,Basics of Statistics,"Statistics is the science of collecting and analyzing numerical data.
+
+Descriptive statistics summarize data using measures like mean, median, and standard deviation. Inferential statistics draw conclusions about populations from samples.
+
+Understanding statistics is fundamental to data science and machine learning. Concepts like hypothesis testing and confidence intervals are used daily.",science,Frank Lee,2025-03-15

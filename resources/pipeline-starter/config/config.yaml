@@ -1,0 +1,39 @@
+# pipeline config - edit this instead of hardcoding stuff in code
+
+# input / output paths
+input_file: "data/raw/articles.csv"
+output_file: "data/processed/articles_prepared.parquet"
+data_card_file: "data/processed/data_card.yaml"
+
+# ingestion
+encoding: "utf-8"
+
+# cleaning
+required_columns:
+  - title
+  - body
+min_body_length: 50
+dedup_columns:
+  - title
+  - body
+
+# chunking
+chunk_method: "paragraph"       # paragraph, fixed, or sentence
+chunk_separator: "\n\n"
+min_chunk_length: 20
+
+# validation
+schema:
+  title:
+    type: "str"
+    nullable: false
+  body:
+    type: "str"
+    nullable: false
+  category:
+    type: "str"
+    allowed: ["tech", "science", "business", "health"]
+  chunk_text:
+    type: "str"
+    nullable: false
+    min_length: 20
