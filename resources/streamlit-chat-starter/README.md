@@ -10,17 +10,19 @@ Make sure Ollama is running before you start. You can check by going to http://l
 
 ## Running the apps
 
+All commands use --server.address localhost so the app only runs localy and dosent expose to the network.
+
 Start with the echo version to test that streamlit works:
 
-    streamlit run app_echo.py
+    streamlit run app_echo.py --server.address localhost
 
 Then try the real LLM version:
 
-    streamlit run app.py
+    streamlit run app.py --server.address localhost
 
 If you want to try streaming (strech goal):
 
-    streamlit run app_streaming.py
+    streamlit run app_streaming.py --server.address localhost
 
 ## Files
 
