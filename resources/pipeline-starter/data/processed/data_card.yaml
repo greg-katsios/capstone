@@ -1,9 +1,9 @@
 # Data Card
-# Generated: 2026-03-04T12:02:22
+# Generated: 2026-03-11T12:48:56
 
 dataset:
   file: data/processed/articles_prepared.parquet
-  hash: d48f450ae8c869c9
+  hash: c55f7b69637aab32
   rows: 19
   columns: 10
 
@@ -12,32 +12,28 @@ schema:
     dtype: Int64
     null_pct: 0.0%
   title:
-    dtype: object
+    dtype: str
     null_pct: 0.0%
-    unique_values: ['Basics of Statistics', 'Data Cleaning Best Practices', 'Getting Started with Python', 'Introduction to Machine Learning', 'The Future of AI', 'Understanding Neural Networks']
   body:
-    dtype: object
+    dtype: str
     null_pct: 0.0%
-    unique_values: ['Artificial intelligence continues to advance rapidly across many domains.\n\nRecent breakthroughs in large language models have transformed how we interact with technology. These models can generate text, answer questions, and assist with coding.\n\nHowever, important challenges remain around safety, alignment, and responsible deployment. The AI research community is actively working on these problems.', 'Data cleaning is the process of detecting and correcting corrupt or inaccurate records.\n\nCommon tasks include handling missing values, removing duplicates, and standardizing formats. Good data cleaning is essential for reliable analysis.\n\nWithout clean data, even the best models will produce poor results. Always validate your data before training.', 'Machine learning is a subset of artificial intelligence that focuses on building systems that learn from data.\n\nThese systems improve their performance over time without being explicitly programmed. Common approaches include supervised learning, unsupervised learning, and reinforcement learning.\n\nSupervised learning uses labeled data to train models. The model learns to map inputs to outputs based on example input-output pairs.', 'Neural networks are computing systems inspired by biological neural networks in the brain.\n\nThey consist of layers of interconnected nodes that process information. Each connection has a weight that adjusts during training.\n\nDeep learning uses neural networks with many layers to learn complex patterns. Applications include image recognition, natural language processing, and game playing.\n\nThe backpropagation algorithm is used to train neural networks by adjusting weights to minimize prediction errors.', 'Python is one of the most popular programming languages in the world.\n\nIt is known for its simple syntax and readability. Python is widely used in web development, data science, and automation.\n\nMany beginners choose Python as their first language because of its gentle learning curve.', 'Statistics is the science of collecting and analyzing numerical data.\n\nDescriptive statistics summarize data using measures like mean, median, and standard deviation. Inferential statistics draw conclusions about populations from samples.\n\nUnderstanding statistics is fundamental to data science and machine learning. Concepts like hypothesis testing and confidence intervals are used daily.']
   category:
-    dtype: object
+    dtype: str
     null_pct: 0.0%
-    unique_values: ['science', 'tech']
   author:
-    dtype: object
+    dtype: str
     null_pct: 0.0%
-    unique_values: ['Alice Chen', 'Bob Martinez', 'Dave Johnson', 'Eve Park', 'Frank Lee']
   publish_date:
-    dtype: datetime64[ns]
+    dtype: datetime64[us]
     null_pct: 0.0%
   chunk_text:
-    dtype: object
+    dtype: str
     null_pct: 0.0%
   chunk_index:
     dtype: int64
     null_pct: 0.0%
   chunk_id:
-    dtype: object
+    dtype: str
     null_pct: 0.0%
   char_count:
     dtype: int64
@@ -54,4 +50,4 @@ stats:
 
 lineage:
   pipeline_version: v1
-  processed_at: 2026-03-04T12:02:22
+  processed_at: 2026-03-11T12:48:56

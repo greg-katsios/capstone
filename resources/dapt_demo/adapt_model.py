@@ -96,7 +96,7 @@ def main():
 
     # Configuration
     MODEL_NAME = "gpt2"  # Small model for demo (124M parameters)
-    DATA_PATH = "sample_data/medical_texts.txt"
+    DATA_PATH = "sample_data/my_domain.txt"
     OUTPUT_DIR = "./adapted_model"
 
     # LoRA configuration
@@ -127,9 +127,9 @@ def main():
     print_section("Step 2: Testing BEFORE Adaptation")
 
     test_prompts = [
-        "The patient presented with",
-        "Diagnosis revealed",
-        "Treatment includes"
+        "League of Legends is most known for",
+        "Pink wards should typically be placed in or around",
+        "Tank champions should play"
     ]
 
     print("\nBase model predictions:")
