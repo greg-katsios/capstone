@@ -1,17 +1,3 @@
-"""
-Persona-Swapping Chat App — Module 12 Demo
-============================================
-Builds on app.py to add dynamic persona selection.
-
-Each persona is stored as a YAML file in the personas/ directory.
-Switching personas clears the conversation and injects a greeting.
-
-Run with:
-    streamlit run app_personas.py
-
-Make sure Ollama is running first.
-"""
-
 import yaml
 import streamlit as st
 from pathlib import Path
