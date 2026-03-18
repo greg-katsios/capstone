@@ -24,7 +24,7 @@ def load_personas(directory: str = "personas") -> dict:
     personas = {}
     persona_dir = Path(directory)
     for filepath in sorted(persona_dir.glob("*.yaml")):
-        with open(filepath) as f:
+        with open(filepath, encoding='utf-8') as f:
             data = yaml.safe_load(f)
         persona_id = filepath.stem  # e.g. "analyst"
         personas[persona_id] = data
