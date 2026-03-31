@@ -1,0 +1,40 @@
+# Data Card for HippoCorpus hcV3-stories
+# Generated: 2026-03-10T15:03:23 (placeholder - run pipeline to update)
+
+dataset:
+  file: data/processed/hcV3_stories_prepared.parquet
+  hash: placeholder
+  rows: placeholder  # Update after running pipeline
+  columns: 9  # Estimated based on processing
+
+schema:
+  AssignmentId:
+    dtype: str
+    null_pct: 0.0%
+  summary:
+    dtype: str
+    null_pct: 0.0%
+  story:
+    dtype: str
+    null_pct: 0.0%
+  chunk_text:
+    dtype: str
+    null_pct: 0.0%
+  chunk_index:
+    dtype: int64
+    null_pct: 0.0%
+  chunk_id:
+    dtype: str
+    null_pct: 0.0%
+  char_count:
+    dtype: int64
+    null_pct: 0.0%
+  # Additional original columns may be included
+
+stats:
+  total_chunks: placeholder  # Update after running pipeline
+  avg_chunk_length: placeholder
+  min_chunk_length: placeholder
+  max_chunk_length: placeholder
+  # No category distribution as this dataset doesn't have categories</content>
+<parameter name="filePath">c:\Users\LotusBlssm\Documents\GitHub\capstone\resources\pipeline-starter\data\processed\hcV3_data_card.yaml

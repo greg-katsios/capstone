@@ -61,7 +61,7 @@ def run_pipeline(config: dict, stage: str = "all") -> None:
             df = clean(df, config["required_columns"], config.get("min_body_length", 50), config.get("dedup_columns"))
         df = chunk(
             df,
-            text_column="body",
+            text_column=config.get("text_column", "body"),
             separator=config.get("chunk_separator", "\n\n"),
             min_chunk_length=config.get("min_chunk_length", 20),
         )
@@ -75,7 +75,7 @@ def run_pipeline(config: dict, stage: str = "all") -> None:
         if stage in ("validate", "export"):
             df = ingest(config["input_file"], config.get("encoding", "utf-8"))
             df = clean(df, config["required_columns"], config.get("min_body_length", 50), config.get("dedup_columns"))
-            df = chunk(df, separator=config.get("chunk_separator", "\n\n"), min_chunk_length=config.get("min_chunk_length", 20))
+            df = chunk(df, text_column=config.get("text_column", "body"), separator=config.get("chunk_separator", "\n\n"), min_chunk_length=config.get("min_chunk_length", 20))
         df = validate(df)
         export(
             df,
