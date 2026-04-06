@@ -1,4 +1,5 @@
 import math
+from copy import deepcopy
 from pathlib import Path
 
 import pandas as pd
@@ -133,6 +134,10 @@ def compute_perplexity(model, tokenizer, texts: list[str], device: torch.device)
 
 def generate_outputs(model, tokenizer, prompts: list[str], device: torch.device) -> list[dict]:
     rows = []
+    # Avoid generation warnings when model config has max_length set and we use max_new_tokens.
+    generation_config = deepcopy(model.generation_config)
+    generation_config.max_length = None
+
     for prompt in prompts:
         inputs = tokenizer(prompt, return_tensors="pt")
         inputs = {k: v.to(device) for k, v in inputs.items()}
@@ -140,6 +145,7 @@ def generate_outputs(model, tokenizer, prompts: list[str], device: torch.device)
         with torch.no_grad():
             output_ids = model.generate(
                 **inputs,
+                generation_config=generation_config,
                 max_new_tokens=MAX_NEW_TOKENS,
                 do_sample=False,
                 pad_token_id=tokenizer.eos_token_id,
@@ -328,29 +334,44 @@ def main():
 
     print("Computing perplexity for base model...")
     base_ppl = compute_perplexity(base_model, tokenizer, stories, device)
+    print(f"Base model complexity: {base_ppl:.4f}")
 
     print("Computing perplexity for adapted model...")
     adapted_ppl = compute_perplexity(adapted_model, tokenizer, stories, device)
+    print(f"Adapated Model Complexity: {adapted_ppl:.4f}")
 
     print("Generating prompt outputs for both models...")
     base_generations = generate_outputs(base_model, tokenizer, PROMPTS, device)
     adapted_generations = generate_outputs(adapted_model, tokenizer, PROMPTS, device)
 
-    print("Computing lexical metrics with NLTK...")
+    print("\nBase Model Prompt Output")
+    for row in base_generations:
+        print(f"Prompt: {row['prompt']}")
+        print(f"Output: {row['generated_text']}")
+        print()
+
+    print("Adapted Model Prompt Output")
+    for row in adapted_generations:
+        print(f"Prompt: {row['prompt']}")
+        print(f"Output: {row['generated_text']}")
+        print()
+
+    print("Computing Lexical Metrics with NLTK")
     base_lex = compute_lexical_metrics([row["continuation_only"] for row in base_generations])
     adapted_lex = compute_lexical_metrics([row["continuation_only"] for row in adapted_generations])
 
-    print("Writing output files...")
-    write_outputs(
-        base_ppl=base_ppl,
-        adapted_ppl=adapted_ppl,
-        base_generations=base_generations,
-        adapted_generations=adapted_generations,
-        base_lex=base_lex,
-        adapted_lex=adapted_lex,
-    )
+    # print("Writing output files...")
+    # write_outputs(
+    #     base_ppl=base_ppl,
+    #     adapted_ppl=adapted_ppl,
+    #     base_generations=base_generations,
+    #     adapted_generations=adapted_generations,
+    #     base_lex=base_lex,
+    #     adapted_lex=adapted_lex,
+    # )
 
     print("Done. Outputs are in:", OUT_DIR)
+    print("Done!")
 
 
 if __name__ == "__main__":
