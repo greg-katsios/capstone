@@ -276,7 +276,7 @@ for key, default in [
 # ════════════════════════════════════════════════════════════════
 with st.sidebar:
     st.header("⚙️ Settings")
-    model = st.text_input("Model", value="llama3.2")
+    model = st.text_input("Model", value="hf.co/Qwen/Qwen3-0.6B-GGUF:Q8_0")
     temperature = st.slider("Temperature", 0.0, 1.0, 0.7, step=0.1)
     system_prompt = st.text_area(
         "System prompt",
