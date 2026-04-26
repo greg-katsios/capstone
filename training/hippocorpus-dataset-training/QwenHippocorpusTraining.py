@@ -1,7 +1,18 @@
+# Requirements:
+#   - transformers
+#   - datasets
+#   - torch-directml (python 3.12 or lower) (optional, for AMD GPU support on Windows)
+
 import os
 import re
+import importlib
 import pandas as pd
 import torch
+
+try:
+    torch_directml = importlib.import_module("torch_directml")
+except ImportError:
+    torch_directml = None
 
 from datasets import Dataset
 from transformers import (
@@ -64,13 +75,38 @@ def main():
     val_tok = val_ds.map(tokenize, batched=True, remove_columns=["story"]) if val_ds is not None else None
 
     # 3) Model
+    use_cuda = torch.cuda.is_available()
     use_mps = torch.backends.mps.is_available()
-    device = torch.device("mps") if use_mps else torch.device("cpu")
-    print("Using device:", device)
+    use_directml = torch_directml is not None
+
+    if use_cuda:
+        backend = "CUDA"
+        device = torch.device("cuda")
+        model_dtype = torch.float16
+    elif use_mps:
+        backend = "MPS"
+        device = torch.device("mps")
+        model_dtype = torch.float16
+    elif use_directml:
+        backend = "DirectML"
+        device = torch_directml.device()
+        # DirectML float16 support can vary by op/hardware; float32 is safer.
+        model_dtype = torch.float32
+    else:
+        backend = "CPU"
+        device = torch.device("cpu")
+        model_dtype = torch.float32
+
+    print(f"Using backend: {backend} ({device})")
+    if backend == "CPU":
+        print(
+            "CPU fallback reason: CUDA unavailable, MPS unavailable, and torch-directml not installed."
+        )
+        print("Install torch-directml on Windows+AMD, or use Linux ROCm for best AMD training support.")
 
     model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
-        torch_dtype=torch.float16 if use_mps else torch.float32,
+        torch_dtype=model_dtype,
         low_cpu_mem_usage=True,
     )
     model.to(device)
