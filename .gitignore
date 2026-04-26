@@ -51,7 +51,6 @@ Desktop.ini
 *.bin
 *.pt
 *.onnx
-*.safetensors
 
 # ── Logs ────────────────────────────────────────
 *.log
