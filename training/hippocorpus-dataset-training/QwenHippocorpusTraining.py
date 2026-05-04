@@ -29,9 +29,9 @@ from peft import LoraConfig, get_peft_model, TaskType
 # Config
 # --------------------
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_MODEL = "Qwen/Qwen3-0.6B"
+BASE_MODEL = "Qwen/Qwen3-1.7B"
 CSV_PATH = os.path.join(SCRIPT_DIR, "hcV3-stories.csv")
-OUT_DIR = os.path.join(SCRIPT_DIR, "Qwen3-0.6B_hippo_recalled_lora_mps")
+OUT_DIR = os.path.join(SCRIPT_DIR, "Qwen3-1.7B_hippo_recalled_lora_mps")
 
 SEED = 42
 MAX_LEN = 256
@@ -45,6 +45,41 @@ DATALOADER_WORKERS = max(1, min(4, (os.cpu_count() or 1) - 1))
 
 def clean_text(s: str) -> str:
     return re.sub(r"\s+", " ", str(s)).strip()
+
+
+class DebugTrainer(Trainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._printed_first_batch = False
+        self._printed_first_batch_prepared = False
+
+    def _prepare_inputs(self, inputs):
+        inputs = super()._prepare_inputs(inputs)
+        target_device = next(self.model.parameters()).device
+        prepared_inputs = {
+            name: value.to(target_device) if torch.is_tensor(value) else value
+            for name, value in inputs.items()
+        }
+        if not self._printed_first_batch_prepared:
+            tensor_devices = {
+                name: value.device
+                for name, value in prepared_inputs.items()
+                if torch.is_tensor(value)
+            }
+            print(f"Prepared first batch tensor devices: {tensor_devices}")
+            self._printed_first_batch_prepared = True
+        return prepared_inputs
+
+    def training_step(self, model, inputs, num_items_in_batch=None):
+        if not self._printed_first_batch:
+            tensor_devices = {
+                name: value.device
+                for name, value in inputs.items()
+                if torch.is_tensor(value)
+            }
+            print(f"Raw first batch tensor devices: {tensor_devices}")
+            self._printed_first_batch = True
+        return super().training_step(model, inputs, num_items_in_batch=num_items_in_batch)
 
 
 def main():
@@ -106,10 +141,13 @@ def main():
 
     model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
-        torch_dtype=model_dtype,
+        dtype=model_dtype,
         low_cpu_mem_usage=True,
+        trust_remote_code=True,
     )
-    model.to(device)
+
+    model = model.to(device)
+    print(f"Model first parameter device: {next(model.parameters()).device}")
 
     # 4) LoRA (Qwen attention projection layers)
     lora_cfg = LoraConfig(
@@ -122,6 +160,7 @@ def main():
     )
 
     model = get_peft_model(model, lora_cfg)
+    model.gradient_checkpointing_enable()
     model.print_trainable_parameters()
 
     # 5) Train
@@ -133,8 +172,8 @@ def main():
         learning_rate=2e-4,
         lr_scheduler_type="cosine",
         warmup_steps=10,
-        per_device_train_batch_size=2,
-        gradient_accumulation_steps=2,
+        per_device_train_batch_size=1,
+        gradient_accumulation_steps=8,
         per_device_eval_batch_size=1,
         logging_steps=50,
         eval_strategy="no" if not ENABLE_EVAL else "epoch",
@@ -146,7 +185,7 @@ def main():
         bf16=False,
     )
 
-    trainer = Trainer(
+    trainer = DebugTrainer(
         model=model,
         args=args,
         train_dataset=train_tok,
