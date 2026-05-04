@@ -83,6 +83,30 @@ function Slider({ label, value, onChange }) {
   );
 }
 
+/* ── Stepper (Temp) ── */
+function Stepper({ label, value, onChange }) {
+  const step = 0.1;
+  const dec = () => onChange(Math.max(0, parseFloat((value - step).toFixed(1))));
+  const inc = () => onChange(Math.min(1, parseFloat((value + step).toFixed(1))));
+
+  return (
+    <div style={{ marginTop: 28 }}>
+      <Label light>{label}</Label>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={dec} style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.15)", border: "none", color: "#fff", fontSize: 20, cursor: value <= 0 ? "not-allowed" : "pointer", opacity: value <= 0 ? 0.4 : 1, fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          −
+        </button>
+        <div style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 999, padding: "10px 0", textAlign: "center", color: "#fff", fontWeight: 700, fontSize: 16, fontFamily: FONT, letterSpacing: "0.05em" }}>
+          {value.toFixed(1)}
+        </div>
+        <button onClick={inc} style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.15)", border: "none", color: "#fff", fontSize: 20, cursor: value >= 1 ? "not-allowed" : "pointer", opacity: value >= 1 ? 0.4 : 1, fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Chat bubble ── */
 function Bubble({ msg, RoleIcon }) {
   const isUser = msg.role === "user";
@@ -302,7 +326,7 @@ export default function PersonaWeave() {
                     <button key={role.name}
                       onClick={() => { setActiveRole(role); setActivePersona(role.name); }}
                       style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 14px", borderRadius: 15, border: isActive ? `2px solid rgba(200,100,200,0.6)` : "2px solid transparent", backgroundColor: isActive ? PURPLE : "rgba(45,27,94,0.85)", cursor: "pointer", textAlign: "left", position: "relative", transition: "all 0.15s" }}>
-                      <div style={{ position: "absolute", top: 10, right: 10, width: 8, height: 8, borderRadius: "50%", backgroundColor: role.status === "active" ? "#22c55e" : "#ef4444" }} />
+                      <div style={{ position: "absolute", top: 10, right: 10, width: 8, height: 8, borderRadius: "50%", backgroundColor: isActive ? "#22c55e" : "#ef4444" }} />
                       <div style={{ width: 46, height: 46, borderRadius: "50%", backgroundColor: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Icon size={21} color={DARK_BG} strokeWidth={2} />
                       </div>
@@ -315,8 +339,8 @@ export default function PersonaWeave() {
                 })}
               </div>
 
-              <Slider label="TEMPERATURE" value={temperature} onChange={setTemperature} />
-              <Slider label="TOP P"       value={topP}         onChange={setTopP} />
+              <Stepper label="TEMPERATURE" value={temperature} onChange={setTemperature} />
+              <Slider label="TOP P"        value={topP}         onChange={setTopP} />
             </div>
           )}
         </aside>
