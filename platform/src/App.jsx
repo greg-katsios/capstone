@@ -124,7 +124,7 @@ function Stepper({ label, value, onChange }) {
 function Bubble({ msg, RoleIcon, onRetry, onFeedback }) {
   const isUser     = msg.role === "user";
   const [copied,   setCopied]   = useState(false);
-  const [feedback, setFeedback] = useState(msg.feedback || null); // 'up' | 'down' | null
+  const [feedback, setFeedback] = useState(msg.feedback || null);
 
   const handleCopy = async () => {
     try {
@@ -172,7 +172,7 @@ function Bubble({ msg, RoleIcon, onRetry, onFeedback }) {
           <RoleIcon size={16} color="#fff" strokeWidth={1.8} />
         </div>
       )}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: isUser ? "flex-end" : "flex-start", maxWidth: "58%" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: isUser ? "flex-end" : "flex-start", maxWidth: "70%" }}>
         <div style={{
           padding: "12px 16px",
           borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
@@ -183,7 +183,6 @@ function Bubble({ msg, RoleIcon, onRetry, onFeedback }) {
           {msg.content}
         </div>
 
-        {/* Action row — only on assistant messages, hidden while streaming/loading */}
         {!isUser && !isPlaceholder && (
           <div style={{ display: "flex", gap: 2, marginTop: 6, marginLeft: 4 }}>
             <ActionBtn onClick={() => handleFeedback("up")}   active={feedback === "up"}   title="Good response">
@@ -217,7 +216,18 @@ export default function PersonaWeave() {
   const [activeChatId,  setActiveChatId]  = useState(null);
   const [inputMsg,      setInputMsg]      = useState("");
   const [loading,       setLoading]       = useState(false);
+  const [windowWidth,   setWindowWidth]   = useState(typeof window !== "undefined" ? window.innerWidth : 1280);
   const bottomRef = useRef(null);
+
+  useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const isCompact = windowWidth < 1100;
+  const isMobile  = windowWidth < 768;
+  const sidebarWidth = isMobile ? 240 : isCompact ? 300 : 380;
 
   const activeChat = conversations.find(c => c.id === activeChatId) || null;
   const chatRole   = ROLES.find(r => r.name === (activeChat?.role || activePersona)) || ROLES[0];
@@ -229,14 +239,11 @@ export default function PersonaWeave() {
 
   async function retryMessage(assistantIndex) {
     if (loading || !activeChat) return;
-
-    // Find the user message that produced this assistant message (the one right before it)
     const userIndex = assistantIndex - 1;
     if (userIndex < 0) return;
     const userMsg = activeChat.messages[userIndex];
     if (!userMsg || userMsg.role !== "user") return;
 
-    // Truncate history up through that user message, then re-call the API
     const truncated = activeChat.messages.slice(0, userIndex + 1);
     const chatId    = activeChatId;
 
@@ -343,7 +350,6 @@ export default function PersonaWeave() {
     }
   }
 
-  /* ── Shared input panel ── */
   function InputPanel() {
     return (
       <div style={{ padding: "14px 24px 20px", flexShrink: 0 }}>
@@ -366,7 +372,7 @@ export default function PersonaWeave() {
               value={inputMsg} onChange={e => setInputMsg(e.target.value)}
               onKeyDown={e => e.key === "Enter" && sendMessage()}
               placeholder="How may we help you today?"
-              style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: "#374151", backgroundColor: "transparent", fontFamily: FONT }}
+              style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: "#374151", backgroundColor: "transparent", fontFamily: FONT, minWidth: 0 }}
             />
             <button onClick={sendMessage} disabled={loading}
               style={{ backgroundColor: loading ? "#d1d5db" : PURPLE, border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: loading ? "not-allowed" : "pointer", flexShrink: 0, transition: "background 0.2s" }}>
@@ -375,7 +381,6 @@ export default function PersonaWeave() {
           </div>
         </div>
 
-        {/* Model label — outside the box */}
         <div style={{
           textAlign: "center",
           marginTop: 10,
@@ -397,7 +402,6 @@ export default function PersonaWeave() {
 
       {/* ── Top bar ── */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 26px", borderBottom: "1px solid #e5e7eb", backgroundColor: "#fff", flexShrink: 0 }}>
-        {/* Real Leidos logo */}
         <img
           src="/leidos_logo.png"
           alt="Leidos"
@@ -406,129 +410,152 @@ export default function PersonaWeave() {
       </div>
 
       {/* ── Body ── */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", minHeight: 0 }}>
 
         {/* ══ SIDEBAR ══ */}
         <aside style={{
-          width: 440,
+          width: sidebarWidth,
           flexShrink: 0,
           backgroundColor: DARK_BG,
-          backgroundImage: "url('/landing_page_background.png')",
-          backgroundSize: "auto 55%",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "left bottom",
           display: "flex",
           flexDirection: "column",
-          padding: "20px 16px 0",
-          overflowY: "auto",
           position: "relative",
+          overflow: "hidden",
         }}>
+          {/* Airplane backdrop — pinned to bottom, behind content */}
+          <img
+            src="/landing_page_background.png"
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: Math.min(sidebarWidth - 30, 320),
+              height: "auto",
+              opacity: 0.6,
+              pointerEvents: "none",
+              userSelect: "none",
+            }}
+          />
 
-          {/* Tab toggle */}
-          <div style={{ display: "flex", backgroundColor: "#fff", borderRadius: 999, padding: 4, marginBottom: 24, flexShrink: 0 }}>
-            {["History", "Settings"].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                style={{ flex: 1, padding: "10px 0", borderRadius: 999, border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: FONT, backgroundColor: activeTab === tab ? PURPLE : "transparent", color: activeTab === tab ? "#fff" : "#374151", transition: "all 0.2s" }}>
-                {tab}
-              </button>
-            ))}
-          </div>
+          {/* Scrollable content layer */}
+          <div style={{
+            position: "relative",
+            zIndex: 1,
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            padding: "20px 16px 0",
+            overflowY: "auto",
+          }}>
 
-          {/* ── HISTORY TAB ── */}
-          {activeTab === "History" && (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingBottom: 20 }}>
-              <Label light>CHAT HISTORY</Label>
-              <button
-                onClick={() => setActiveChatId(null)}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 12, backgroundColor: PURPLE, border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", marginBottom: 14, fontFamily: FONT }}>
-                <Plus size={17} /> New Conversation
-              </button>
+            {/* Tab toggle */}
+            <div style={{ display: "flex", backgroundColor: "#fff", borderRadius: 999, padding: 4, marginBottom: 24, flexShrink: 0 }}>
+              {["History", "Settings"].map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  style={{ flex: 1, padding: "10px 0", borderRadius: 999, border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: FONT, backgroundColor: activeTab === tab ? PURPLE : "transparent", color: activeTab === tab ? "#fff" : "#374151", transition: "all 0.2s" }}>
+                  {tab}
+                </button>
+              ))}
+            </div>
 
-              {conversations.length === 0 ? (
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, paddingBottom: 60 }}>
-                  <MessageSquare size={50} color="rgba(255,255,255,0.2)" strokeWidth={1.2} />
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ color: "#fff", fontWeight: 600, fontSize: 14, marginBottom: 4, fontFamily: FONT }}>No conversations yet.</div>
-                    <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 12, fontFamily: FONT }}>Start a new chat to get going.</div>
+            {/* ── HISTORY TAB ── */}
+            {activeTab === "History" && (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingBottom: 20 }}>
+                <Label light>CHAT HISTORY</Label>
+                <button
+                  onClick={() => setActiveChatId(null)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 12, backgroundColor: PURPLE, border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", marginBottom: 14, fontFamily: FONT }}>
+                  <Plus size={17} /> New Conversation
+                </button>
+
+                {conversations.length === 0 ? (
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, paddingBottom: 60 }}>
+                    <MessageSquare size={50} color="rgba(255,255,255,0.2)" strokeWidth={1.2} />
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ color: "#fff", fontWeight: 600, fontSize: 14, marginBottom: 4, fontFamily: FONT }}>No conversations yet.</div>
+                      <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 12, fontFamily: FONT }}>Start a new chat to get going.</div>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                  {conversations.map(c => {
-                    const isActive = activeChatId === c.id;
-                    return (
-                      <button key={c.id} onClick={() => setActiveChatId(c.id)}
-                        style={{
-                          padding: "13px 16px",
-                          borderRadius: 14,
-                          backgroundColor: isActive ? PURPLE : "rgba(255,255,255,0.07)",
-                          border: isActive ? "2px solid #4ea3ff" : "2px solid transparent",
-                          color: "#fff",
-                          textAlign: "left",
-                          cursor: "pointer",
-                          fontFamily: FONT,
-                          transition: "all 0.15s",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 4,
-                        }}>
-                        <div style={{ fontWeight: 700, fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {c.title}
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {c.role}
-                          </span>
-                          {c.createdAt && (
-                            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", whiteSpace: "nowrap", flexShrink: 0 }}>
-                              {formatTimestamp(c.createdAt)}
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                    {conversations.map(c => {
+                      const isActive = activeChatId === c.id;
+                      return (
+                        <button key={c.id} onClick={() => setActiveChatId(c.id)}
+                          style={{
+                            padding: "13px 16px",
+                            borderRadius: 14,
+                            backgroundColor: isActive ? PURPLE : "rgba(255,255,255,0.07)",
+                            border: isActive ? "2px solid #4ea3ff" : "2px solid transparent",
+                            color: "#fff",
+                            textAlign: "left",
+                            cursor: "pointer",
+                            fontFamily: FONT,
+                            transition: "all 0.15s",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 4,
+                          }}>
+                          <div style={{ fontWeight: 700, fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {c.title}
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {c.role}
                             </span>
-                          )}
+                            {c.createdAt && (
+                              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", whiteSpace: "nowrap", flexShrink: 0 }}>
+                                {formatTimestamp(c.createdAt)}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── SETTINGS TAB ── */}
+            {activeTab === "Settings" && (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingBottom: 28 }}>
+                <Label light>PERSONA SELECTION</Label>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {ROLES.map(role => {
+                    const Icon     = role.icon;
+                    const isActive = activeRole.name === role.name;
+                    return (
+                      <button key={role.name}
+                        onClick={() => { setActiveRole(role); setActivePersona(role.name); }}
+                        style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 14px", borderRadius: 15, border: isActive ? `2px solid rgba(200,100,200,0.6)` : "2px solid transparent", backgroundColor: isActive ? PURPLE : "rgba(45,27,94,0.85)", cursor: "pointer", textAlign: "left", position: "relative", transition: "all 0.15s" }}>
+                        <div style={{ position: "absolute", top: 10, right: 10, width: 8, height: 8, borderRadius: "50%", backgroundColor: isActive ? "#22c55e" : "#ef4444" }} />
+                        <div style={{ width: 46, height: 46, borderRadius: "50%", backgroundColor: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon size={21} color={DARK_BG} strokeWidth={2} />
+                        </div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ color: "#fff", fontWeight: 700, fontSize: 15, marginBottom: 3, fontFamily: FONT }}>{role.name}</div>
+                          <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, lineHeight: 1.4, fontFamily: FONT }}>{role.description}</div>
                         </div>
                       </button>
                     );
                   })}
                 </div>
-              )}
-            </div>
-          )}
 
-          {/* ── SETTINGS TAB ── */}
-          {activeTab === "Settings" && (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingBottom: 28 }}>
-              <Label light>PERSONA SELECTION</Label>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {ROLES.map(role => {
-                  const Icon     = role.icon;
-                  const isActive = activeRole.name === role.name;
-                  return (
-                    <button key={role.name}
-                      onClick={() => { setActiveRole(role); setActivePersona(role.name); }}
-                      style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 14px", borderRadius: 15, border: isActive ? `2px solid rgba(200,100,200,0.6)` : "2px solid transparent", backgroundColor: isActive ? PURPLE : "rgba(45,27,94,0.85)", cursor: "pointer", textAlign: "left", position: "relative", transition: "all 0.15s" }}>
-                      <div style={{ position: "absolute", top: 10, right: 10, width: 8, height: 8, borderRadius: "50%", backgroundColor: isActive ? "#22c55e" : "#ef4444" }} />
-                      <div style={{ width: 46, height: 46, borderRadius: "50%", backgroundColor: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Icon size={21} color={DARK_BG} strokeWidth={2} />
-                      </div>
-                      <div>
-                        <div style={{ color: "#fff", fontWeight: 700, fontSize: 15, marginBottom: 3, fontFamily: FONT }}>{role.name}</div>
-                        <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, lineHeight: 1.4, fontFamily: FONT }}>{role.description}</div>
-                      </div>
-                    </button>
-                  );
-                })}
+                <Stepper label="TEMPERATURE" value={temperature} onChange={setTemperature} />
+                <Slider  label="TOP P"        value={topP}         onChange={setTopP} />
               </div>
-
-              <Stepper label="TEMPERATURE" value={temperature} onChange={setTemperature} />
-              <Slider label="TOP P"        value={topP}         onChange={setTopP} />
-            </div>
-          )}
+            )}
+          </div>
         </aside>
 
         {/* ══ MAIN ══ */}
-        <main style={{ flex: 1, display: "flex", flexDirection: "column", backgroundColor: "#fff", overflow: "hidden" }}>
+        <main style={{ flex: 1, display: "flex", flexDirection: "column", backgroundColor: "#fff", overflow: "hidden", minWidth: 0 }}>
 
           {activeChat ? (
-            /* ── ACTIVE CHAT ── */
             <>
               <div style={{ padding: "18px 28px 14px", borderBottom: "1px solid #f0f0f0", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -537,9 +564,9 @@ export default function PersonaWeave() {
                     alt="Persona Weave"
                     style={{ width: 50, height: 50, objectFit: "contain", flexShrink: 0 }}
                   />
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 20, fontWeight: 700, color: "#111827", fontFamily: FONT }}>Hello, User!</div>
-                    <div style={{ fontSize: 13, color: "#6b7280", display: "flex", alignItems: "center", gap: 6, marginTop: 2, fontFamily: FONT }}>
+                    <div style={{ fontSize: 13, color: "#6b7280", display: "flex", alignItems: "center", gap: 6, marginTop: 2, fontFamily: FONT, flexWrap: "wrap" }}>
                       You are chatting with:
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 5, backgroundColor: "#f3f4f6", borderRadius: 999, padding: "2px 10px 2px 5px" }}>
                         <div style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: PURPLE, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -553,24 +580,23 @@ export default function PersonaWeave() {
               </div>
 
               <div style={{ flex: 1, overflowY: "auto", padding: "22px 28px" }}>
-                  {activeChat.messages.map((msg, i) => (
-                    <Bubble
-                      key={i}
-                      msg={msg}
-                      RoleIcon={RoleIcon}
-                      onRetry={msg.role === "assistant" ? () => retryMessage(i) : undefined}
-                      onFeedback={msg.role === "assistant" ? (val) => setMessageFeedback(i, val) : undefined}
-                    />
-                  ))}
+                {activeChat.messages.map((msg, i) => (
+                  <Bubble
+                    key={i}
+                    msg={msg}
+                    RoleIcon={RoleIcon}
+                    onRetry={msg.role === "assistant" ? () => retryMessage(i) : undefined}
+                    onFeedback={msg.role === "assistant" ? (val) => setMessageFeedback(i, val) : undefined}
+                  />
+                ))}
                 <div ref={bottomRef} />
               </div>
 
               <InputPanel />
             </>
           ) : (
-            /* ── LANDING ── */
             <>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px", textAlign: "center" }}>
                 <img
                   src="/airplane.png"
                   alt="Persona Weave"
