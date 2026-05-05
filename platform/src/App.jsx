@@ -412,9 +412,11 @@ export default function PersonaWeave() {
         <aside style={{
           width: 440,
           flexShrink: 0,
+          backgroundColor: DARK_BG,
           backgroundImage: "url('/landing_page_background.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundSize: "auto 55%",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "left bottom",
           display: "flex",
           flexDirection: "column",
           padding: "20px 16px 0",
@@ -530,9 +532,11 @@ export default function PersonaWeave() {
             <>
               <div style={{ padding: "18px 28px 14px", borderBottom: "1px solid #f0f0f0", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <div style={{ width: 50, height: 50, borderRadius: "50%", backgroundColor: DARK_BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/leidos_logo.png" alt="Leidos" style={{ width: 30, height: "auto", filter: "brightness(0) invert(1)" }} />
-                  </div>
+                  <img
+                    src="/airplane.png"
+                    alt="Persona Weave"
+                    style={{ width: 50, height: 50, objectFit: "contain", flexShrink: 0 }}
+                  />
                   <div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: "#111827", fontFamily: FONT }}>Hello, User!</div>
                     <div style={{ fontSize: 13, color: "#6b7280", display: "flex", alignItems: "center", gap: 6, marginTop: 2, fontFamily: FONT }}>
