@@ -1,10 +1,23 @@
 import { useState, useRef, useEffect } from "react";
-import { Shield, Brain, Flag, UserCircle, Send, Plus, MessageSquare, ChevronDown } from "lucide-react";
+import { Shield, Brain, Flag, UserCircle, Send, Plus, MessageSquare, ChevronDown, ThumbsUp, ThumbsDown, RotateCcw, Copy, Check } from "lucide-react";
 
 const FONT    = "'Allianz Neo W04', 'Helvetica Neue', Arial, sans-serif";
 const PURPLE  = "#a020a0";
 const DARK_BG = "#1a0d3d";
 const CARD_BG = "#2d1b5e";
+
+/* ── Format timestamp like "May 4 - 2:15 PM (PST)" ── */
+function formatTimestamp(date) {
+  const d      = new Date(date);
+  const month  = d.toLocaleString("en-US", { month: "short" });
+  const day    = d.getDate();
+  const hr24   = d.getHours();
+  const hr12   = hr24 % 12 === 0 ? 12 : hr24 % 12;
+  const mm     = String(d.getMinutes()).padStart(2, "0");
+  const ampm   = hr24 >= 12 ? "PM" : "AM";
+  const tzAbbr = d.toLocaleTimeString("en-US", { timeZoneName: "short" }).split(" ").pop();
+  return `${month} ${day} - ${hr12}:${mm} ${ampm} (${tzAbbr})`;
+}
 
 /* ── Section label used throughout ── */
 function Label({ children, light = false }) {
@@ -107,9 +120,51 @@ function Stepper({ label, value, onChange }) {
   );
 }
 
-/* ── Chat bubble ── */
-function Bubble({ msg, RoleIcon }) {
-  const isUser = msg.role === "user";
+/* ── Chat bubble with action row for assistant messages ── */
+function Bubble({ msg, RoleIcon, onRetry, onFeedback }) {
+  const isUser     = msg.role === "user";
+  const [copied,   setCopied]   = useState(false);
+  const [feedback, setFeedback] = useState(msg.feedback || null); // 'up' | 'down' | null
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(msg.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* ignore */ }
+  };
+
+  const handleFeedback = (kind) => {
+    const next = feedback === kind ? null : kind;
+    setFeedback(next);
+    onFeedback?.(next);
+  };
+
+  const isPlaceholder = msg.content === "…";
+
+  const ActionBtn = ({ children, onClick, active, title }) => (
+    <button
+      onClick={onClick}
+      title={title}
+      style={{
+        background: "transparent",
+        border: "none",
+        padding: 5,
+        borderRadius: 6,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: active ? PURPLE : "#9ca3af",
+        transition: "color 0.15s, background 0.15s",
+      }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#374151"; e.currentTarget.style.background = "#f3f4f6"; }}
+      onMouseLeave={e => { if (!active) e.currentTarget.style.color = "#9ca3af"; e.currentTarget.style.background = "transparent"; }}
+    >
+      {children}
+    </button>
+  );
+
   return (
     <div style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 10, marginBottom: 18 }}>
       {!isUser && (
@@ -117,14 +172,36 @@ function Bubble({ msg, RoleIcon }) {
           <RoleIcon size={16} color="#fff" strokeWidth={1.8} />
         </div>
       )}
-      <div style={{
-        maxWidth: "58%", padding: "12px 16px",
-        borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-        backgroundColor: isUser ? DARK_BG : "#f3f4f6",
-        color: isUser ? "#fff" : "#111827",
-        fontSize: 14, lineHeight: 1.6, fontFamily: FONT,
-      }}>
-        {msg.content}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: isUser ? "flex-end" : "flex-start", maxWidth: "58%" }}>
+        <div style={{
+          padding: "12px 16px",
+          borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+          backgroundColor: isUser ? DARK_BG : "#f3f4f6",
+          color: isUser ? "#fff" : "#111827",
+          fontSize: 14, lineHeight: 1.6, fontFamily: FONT,
+        }}>
+          {msg.content}
+        </div>
+
+        {/* Action row — only on assistant messages, hidden while streaming/loading */}
+        {!isUser && !isPlaceholder && (
+          <div style={{ display: "flex", gap: 2, marginTop: 6, marginLeft: 4 }}>
+            <ActionBtn onClick={() => handleFeedback("up")}   active={feedback === "up"}   title="Good response">
+              <ThumbsUp size={15} strokeWidth={1.8} />
+            </ActionBtn>
+            <ActionBtn onClick={() => handleFeedback("down")} active={feedback === "down"} title="Bad response">
+              <ThumbsDown size={15} strokeWidth={1.8} />
+            </ActionBtn>
+            <ActionBtn onClick={handleCopy} active={copied} title={copied ? "Copied!" : "Copy"}>
+              {copied ? <Check size={15} strokeWidth={2} /> : <Copy size={15} strokeWidth={1.8} />}
+            </ActionBtn>
+            {onRetry && (
+              <ActionBtn onClick={onRetry} title="Retry">
+                <RotateCcw size={15} strokeWidth={1.8} />
+              </ActionBtn>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -150,6 +227,65 @@ export default function PersonaWeave() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeChat?.messages?.length]);
 
+  async function retryMessage(assistantIndex) {
+    if (loading || !activeChat) return;
+
+    // Find the user message that produced this assistant message (the one right before it)
+    const userIndex = assistantIndex - 1;
+    if (userIndex < 0) return;
+    const userMsg = activeChat.messages[userIndex];
+    if (!userMsg || userMsg.role !== "user") return;
+
+    // Truncate history up through that user message, then re-call the API
+    const truncated = activeChat.messages.slice(0, userIndex + 1);
+    const chatId    = activeChatId;
+
+    setConversations(c => c.map(x => x.id === chatId
+      ? { ...x, messages: [...truncated, { role: "assistant", content: "…" }] }
+      : x
+    ));
+    setLoading(true);
+
+    const role = ROLES.find(r => r.name === activeChat.role) || ROLES[0];
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: role.systemPrompt,
+          temperature,
+          top_p: topP,
+          messages: truncated.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      const data  = await res.json();
+      const reply = data.content?.find(b => b.type === "text")?.text || "No response received.";
+      setConversations(c => c.map(x => x.id === chatId
+        ? { ...x, messages: [...truncated, { role: "assistant", content: reply }] }
+        : x
+      ));
+    } catch {
+      setConversations(c => c.map(x => x.id === chatId
+        ? { ...x, messages: [...truncated, { role: "assistant", content: "Connection error — please try again." }] }
+        : x
+      ));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function setMessageFeedback(messageIndex, value) {
+    if (!activeChat) return;
+    const chatId = activeChatId;
+    setConversations(c => c.map(x => x.id === chatId
+      ? { ...x, messages: x.messages.map((m, i) => i === messageIndex ? { ...m, feedback: value } : m) }
+      : x
+    ));
+  }
+
   async function sendMessage() {
     const text = inputMsg.trim();
     if (!text || loading) return;
@@ -159,7 +295,8 @@ export default function PersonaWeave() {
     let baseConvos = conversations;
 
     if (!chatId) {
-      const newChat = { id: Date.now(), title: text.slice(0, 42), role: activePersona, messages: [] };
+      const now     = Date.now();
+      const newChat = { id: now, title: text.slice(0, 42), role: activePersona, messages: [], createdAt: now };
       baseConvos = [newChat, ...conversations];
       setConversations(baseConvos);
       chatId = newChat.id;
@@ -237,6 +374,19 @@ export default function PersonaWeave() {
             </button>
           </div>
         </div>
+
+        {/* Model label — outside the box */}
+        <div style={{
+          textAlign: "center",
+          marginTop: 10,
+          fontFamily: FONT,
+          fontWeight: 300,
+          fontSize: 13,
+          color: "#6b7280",
+          letterSpacing: "0.02em",
+        }}>
+          Uses Qwen 3-1.7B Model
+        </div>
       </div>
     );
   }
@@ -302,13 +452,40 @@ export default function PersonaWeave() {
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                  {conversations.map(c => (
-                    <button key={c.id} onClick={() => setActiveChatId(c.id)}
-                      style={{ padding: "11px 14px", borderRadius: 11, backgroundColor: activeChatId === c.id ? PURPLE : "rgba(255,255,255,0.07)", border: "none", color: "#fff", textAlign: "left", cursor: "pointer", fontFamily: FONT, transition: "background 0.15s" }}>
-                      <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 2 }}>{c.title}</div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{c.role}</div>
-                    </button>
-                  ))}
+                  {conversations.map(c => {
+                    const isActive = activeChatId === c.id;
+                    return (
+                      <button key={c.id} onClick={() => setActiveChatId(c.id)}
+                        style={{
+                          padding: "13px 16px",
+                          borderRadius: 14,
+                          backgroundColor: isActive ? PURPLE : "rgba(255,255,255,0.07)",
+                          border: isActive ? "2px solid #4ea3ff" : "2px solid transparent",
+                          color: "#fff",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          fontFamily: FONT,
+                          transition: "all 0.15s",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                        }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {c.title}
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {c.role}
+                          </span>
+                          {c.createdAt && (
+                            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", whiteSpace: "nowrap", flexShrink: 0 }}>
+                              {formatTimestamp(c.createdAt)}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -372,9 +549,15 @@ export default function PersonaWeave() {
               </div>
 
               <div style={{ flex: 1, overflowY: "auto", padding: "22px 28px" }}>
-                {activeChat.messages.map((msg, i) => (
-                  <Bubble key={i} msg={msg} RoleIcon={RoleIcon} />
-                ))}
+                  {activeChat.messages.map((msg, i) => (
+                    <Bubble
+                      key={i}
+                      msg={msg}
+                      RoleIcon={RoleIcon}
+                      onRetry={msg.role === "assistant" ? () => retryMessage(i) : undefined}
+                      onFeedback={msg.role === "assistant" ? (val) => setMessageFeedback(i, val) : undefined}
+                    />
+                  ))}
                 <div ref={bottomRef} />
               </div>
 
@@ -384,23 +567,13 @@ export default function PersonaWeave() {
             /* ── LANDING ── */
             <>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ width: 76, height: 76, borderRadius: "50%", backgroundColor: DARK_BG, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 22 }}>
-                  <img src="/leidos_logo.png" alt="Leidos" style={{ width: 44, height: "auto", filter: "brightness(0) invert(1)" }} />
-                </div>
+                <img
+                  src="/airplane.png"
+                  alt="Persona Weave"
+                  style={{ width: 111, height: 111, marginBottom: 22, objectFit: "contain" }}
+                />
                 <h1 style={{ fontSize: 40, fontWeight: 700, color: "#111827", margin: "0 0 8px", fontFamily: FONT }}>Hello, User!</h1>
                 <p style={{ fontSize: 17, color: "#6b7280", margin: 0, fontFamily: FONT }}>Welcome to Persona Weave.</p>
-              </div>
-
-              <div style={{ padding: "0 24px" }}>
-                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-                  <div style={{ backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 14, padding: "12px 16px", width: 270 }}>
-                    <Label>MODEL</Label>
-                    <button style={{ width: "100%", backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: 999, padding: "9px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontWeight: 500, fontSize: 14, color: "#1f2937", fontFamily: FONT }}>
-                      <span>Persona Weave Beta</span>
-                      <ChevronDown size={15} color="#6b7280" />
-                    </button>
-                  </div>
-                </div>
               </div>
 
               <InputPanel />
