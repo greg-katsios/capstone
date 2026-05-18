@@ -22,6 +22,7 @@ Usage:
 """
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -45,6 +46,59 @@ def print_section(title):
 def print_step(n, title):
     """Print a numbered step header."""
     print(f"\n── Step {n}: {title} " + "─" * max(0, 43 - len(title)))
+
+
+def load_model_config(model_dir):
+    """Load the Hugging Face config for a saved model directory."""
+    config_path = os.path.join(model_dir, "config.json")
+
+    if not os.path.isfile(config_path):
+        return {}
+
+    with open(config_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def get_model_architecture(model_dir):
+    """Return the primary architecture name recorded in config.json."""
+    config = load_model_config(model_dir)
+    architectures = config.get("architectures") or []
+    if architectures:
+        return architectures[0]
+    return config.get("model_type", "")
+
+
+def supports_direct_safetensors(model_dir):
+    """Return True when Ollama can import the model directory directly."""
+    config = load_model_config(model_dir)
+    model_type = (config.get("model_type") or "").lower()
+
+    # Ollama currently documents direct safetensors support for these families.
+    return model_type in {"llama", "mistral", "gemma", "phi3"}
+
+
+def find_gguf_converter(explicit_converter=None):
+    """Find a convert_hf_to_gguf.py script if one is available locally."""
+    candidates = []
+
+    if explicit_converter:
+        candidates.append(explicit_converter)
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates.extend(
+        [
+            os.path.join(script_dir, "convert_hf_to_gguf.py"),
+            os.path.join(script_dir, "..", "llama.cpp", "convert_hf_to_gguf.py"),
+            os.path.join(script_dir, "..", "..", "llama.cpp", "convert_hf_to_gguf.py"),
+        ]
+    )
+
+    for candidate in candidates:
+        candidate = os.path.abspath(candidate)
+        if os.path.isfile(candidate):
+            return candidate
+
+    return None
 
 
 # ── Core pipeline ────────────────────────────────────────────────
@@ -103,7 +157,64 @@ def merge_adapter(adapter_dir, merged_dir):
     return merged_dir
 
 
-def write_modelfile(merged_dir, modelfile_path, system_prompt=None):
+def convert_to_gguf(model_dir, gguf_path, converter_path):
+    """Convert a merged Hugging Face model directory to GGUF."""
+    print_step(2, "Convert to GGUF")
+
+    if os.path.isfile(gguf_path):
+        os.remove(gguf_path)
+
+    cmd = [
+        sys.executable,
+        converter_path,
+        model_dir,
+        "--outtype",
+        "f16",
+        "--outfile",
+        gguf_path,
+    ]
+
+    print(f"Converting with: {' '.join(cmd)}\n")
+    result = subprocess.run(cmd, capture_output=False)
+
+    if result.returncode != 0 or not os.path.isfile(gguf_path):
+        print(f"\nERROR: GGUF conversion failed (exit code {result.returncode}).")
+        print("Common fixes:")
+        print("  - Make sure you have a recent llama.cpp checkout")
+        print("  - Pass --gguf-converter with the full path to convert_hf_to_gguf.py")
+        print("  - Ensure the converter supports Qwen3 models")
+        sys.exit(1)
+
+    gguf_size_gb = os.path.getsize(gguf_path) / (1024 ** 3)
+    print(f"\n[OK] GGUF model saved to: {gguf_path}")
+    print(f"     Size on disk: ~{gguf_size_gb:.1f} GB")
+
+    return gguf_path
+
+
+def prepare_ollama_source(model_dir, gguf_converter=None):
+    """Choose the best Ollama import source for the converted model."""
+    if supports_direct_safetensors(model_dir):
+        print("Using direct safetensors import for a supported architecture.")
+        return model_dir
+
+    print(
+        "This architecture is not supported by Ollama's direct safetensors importer. "
+        "Converting to GGUF instead."
+    )
+
+    converter_path = find_gguf_converter(gguf_converter)
+    if not converter_path:
+        print("ERROR: Could not find convert_hf_to_gguf.py")
+        print("Provide --gguf-converter /full/path/to/convert_hf_to_gguf.py")
+        print("or place a llama.cpp checkout near this script.")
+        sys.exit(1)
+
+    gguf_path = os.path.join(model_dir, "model-f16.gguf")
+    return convert_to_gguf(model_dir, gguf_path, converter_path)
+
+
+def write_modelfile(model_source_path, modelfile_path, system_prompt=None, step=2):
     """
     Write an Ollama Modelfile.
 
@@ -111,16 +222,16 @@ def write_modelfile(merged_dir, modelfile_path, system_prompt=None):
     describes how to build a model.  At minimum it needs a FROM line
     pointing to your model weights.
     """
-    print_step(2, "Write Modelfile")
+    print_step(step, "Write Modelfile")
 
     # Use absolute path so Ollama can find the model from any cwd.
-    abs_model_dir = os.path.abspath(merged_dir)
+    abs_model_path = os.path.abspath(model_source_path)
 
     lines = []
 
     # FROM points to the merged safetensors directory.
     # Ollama reads the config.json + *.safetensors files directly.
-    lines.append(f"FROM {abs_model_dir}")
+    lines.append(f"FROM {abs_model_path}")
     lines.append("")
 
     # Sensible defaults for conversational personas.
@@ -209,10 +320,10 @@ def verify_model(model_name):
 
         response = chat(
             model=model_name,
-            messages=[{"role": "user", "content": "Hello! Tell me about yourself in one sentence."}],
+            messages=[{"role": "user", "content": "Hello! Please tell me a story."}],
         )
         reply = response["message"]["content"]
-        print(f"  Prompt:   'Hello! Tell me about yourself in one sentence.'")
+        print(f"  Prompt:   'Hello! Please tell me a story.'")
         print(f"  Response: {reply}")
         print(f"\n[OK] Model is working!")
     except ImportError:
@@ -262,6 +373,11 @@ def main():
         default="./merged_model",
         help="Where to save the merged model (default: ./merged_model)",
     )
+    parser.add_argument(
+        "--gguf-converter",
+        default=None,
+        help="Path to llama.cpp's convert_hf_to_gguf.py (optional if discoverable)",
+    )
 
     args = parser.parse_args()
 
@@ -277,9 +393,17 @@ def main():
     # Step 1: Merge LoRA adapter into the base model
     merged_dir = merge_adapter(args.adapter_dir, args.merged_dir)
 
+    # Step 1b: Choose an Ollama-compatible source format.
+    ollama_source = prepare_ollama_source(merged_dir, args.gguf_converter)
+
     # Step 2: Write a Modelfile for Ollama
     modelfile_path = os.path.join(merged_dir, "Modelfile")
-    write_modelfile(merged_dir, modelfile_path, args.system_prompt)
+    write_modelfile(
+        ollama_source,
+        modelfile_path,
+        args.system_prompt,
+        step=3 if ollama_source.lower().endswith(".gguf") else 2,
+    )
 
     # Step 3: Register the model in Ollama
     register_in_ollama(args.model_name, modelfile_path, args.quantize)

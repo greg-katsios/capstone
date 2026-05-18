@@ -64,3 +64,6 @@ htmlcov/
 # ── Misc ────────────────────────────────────────
 *.bak
 *.tmp
+
+# ── Large Model Files ───────────────────────────
+/merged_model/
