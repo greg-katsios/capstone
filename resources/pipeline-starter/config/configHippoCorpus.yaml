@@ -1,0 +1,38 @@
+# pipeline config for HippoCorpus - edit this instead of hardcoding stuff in code
+
+# input / output paths
+input_file: "data/raw/hcV3-stories.csv"
+output_file: "data/processed/hcV3_stories_prepared.parquet"
+data_card_file: "data/processed/hcV3_data_card.yaml"
+
+# ingestion
+encoding: "utf-8"
+
+# cleaning
+required_columns:
+  - summary
+  - story
+min_body_length: 50
+dedup_columns:
+  - summary
+  - story
+
+# chunking
+chunk_method: "paragraph"       # paragraph, fixed, or sentence
+chunk_separator: "\n\n"
+min_chunk_length: 20
+text_column: "story"
+
+# validation
+schema:
+  summary:
+    type: "str"
+    nullable: false
+  story:
+    type: "str"
+    nullable: false
+  chunk_text:
+    type: "str"
+    nullable: false
+    min_length: 20</content>
+<parameter name="filePath">c:\Users\LotusBlssm\Documents\GitHub\capstone\resources\pipeline-starter\config\configHippoCorpus.yaml
