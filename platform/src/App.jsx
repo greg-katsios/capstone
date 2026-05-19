@@ -39,7 +39,7 @@ const ROLES = [
     description: "High-pressure training simulations for military, corporate, and emergency response.",
     icon: Shield,
     tone: "Formal",
-    extendedDescription: "Built for corporate trainers, military instructors, and emergency response educators who need consistent, believable personas for repeated high-pressure simulations. Delivers structured, realistic scenarios so trainees can build competency without real-world risk.",
+    extendedDescription: "Built for corporate trainers, military instructors, and emergency response educators who need consistent personas for repeated high-pressure simulations. Delivers structured, realistic scenarios so trainees can build competency without real-world risk.",
     tags: ["Military training", "Corporate drills", "Emergency response"],
     systemPrompt: "You are a Defense Analyst AI persona. You specialize in defense systems, threat intelligence, and strategic analysis. Respond with expertise, precision, and a professional military/defense tone. Keep responses concise and structured.",
   },
@@ -57,7 +57,7 @@ const ROLES = [
     description: "Adversarial press briefings, hostile interviews, and reputation-crisis scenarios.",
     icon: Flag,
     tone: "Direct",
-    extendedDescription: "Built for journalists and PR strategists who need to practice under fire. Simulates hostile press briefings, adversarial interviews, and reputation-crisis scenarios at scale — presenting a believable adversarial or spokesperson persona so practitioners can sharpen their message control before it counts.",
+    extendedDescription: "Built for journalists and PR strategists who need to practice under fire. Simulates hostile press briefings, adversarial interviews, and reputation-crisis scenarios at scale. Presents a believable spokesperson persona so practitioners can sharpen their message control before it counts.",
     tags: ["Press briefings", "Reputation crisis", "Media training"],
     systemPrompt: "You are a Crisis Strategist AI persona. You specialize in media training, adversarial interviews, and reputation management. Respond with sharp, strategic communication advice. Keep responses concise.",
   },
@@ -66,7 +66,7 @@ const ROLES = [
     description: "Safe simulation of emotionally complex conversations for mental health training.",
     icon: UserCircle,
     tone: "Empathetic",
-    extendedDescription: "Designed for mental health counselors and therapists in training. Simulates supportive, non-judgmental conversations to practice de-escalation, active listening, and boundary-setting — all without involving real clients or exposing trainees to uncontrolled emotional risk.",
+    extendedDescription: "Designed for mental health counselors and therapists in training. Simulates supportive, non-judgmental conversations to practice de-escalation, active listening, and boundary-setting. Use case without involving real clients or exposing trainees to uncontrolled emotional risk.",
     tags: ["De-escalation", "Active listening", "Boundary-setting"],
     systemPrompt: "You are a Therapy Trainer AI persona. You specialize in de-escalation practice, active listening, and emotional conversations. Respond with warmth, empathy, and therapeutic insight. Keep responses concise.",
   },
@@ -212,19 +212,103 @@ function Bubble({ msg, RoleIcon, onRetry, onFeedback, fontSize }) {
   );
 }
 
+/* ── InputPanel lifted outside PersonaWeave to prevent remount on every keystroke ── */
+function InputPanel({ inputMsg, setInputMsg, sendMessage, loading, activePersona, setActivePersona, setActiveRole, accessibilityMode, A11Y }) {
+  return (
+    <div style={{ padding: "14px 24px 20px", flexShrink: 0 }}>
+      <div style={{
+        backgroundColor: A11Y.inputBg,
+        border: A11Y.inputBorder,
+        borderRadius: 14,
+        padding: "16px 18px",
+      }}>
+        <Label>PERSONA SELECTION</Label>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+          {ROLES.map(r => {
+            const sel = activePersona === r.name;
+            return (
+              <button key={r.name}
+                onClick={() => { setActivePersona(r.name); setActiveRole(ROLES.find(x => x.name === r.name)); }}
+                style={{
+                  padding: accessibilityMode ? "9px 16px" : "7px 14px",
+                  borderRadius: 999,
+                  border: `${accessibilityMode ? "2px" : "1px"} solid ${sel ? PURPLE : (accessibilityMode ? "#9ca3af" : "#e5e7eb")}`,
+                  backgroundColor: sel ? PURPLE : "#fff",
+                  color: sel ? "#fff" : "#1f2937",
+                  fontWeight: 600,
+                  fontSize: A11Y.fontSize,
+                  cursor: "pointer",
+                  fontFamily: FONT,
+                  transition: "all 0.15s",
+                }}>
+                {r.name}
+              </button>
+            );
+          })}
+        </div>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10,
+          backgroundColor: "#fff",
+          border: accessibilityMode ? "2px solid #d1d5db" : "1px solid #e5e7eb",
+          borderRadius: 999,
+          padding: "9px 14px",
+        }}>
+          <input
+            value={inputMsg}
+            onChange={e => setInputMsg(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && sendMessage()}
+            placeholder="How may we help you today?"
+            style={{
+              flex: 1, border: "none", outline: "none",
+              fontSize: A11Y.fontSize,
+              color: "#374151",
+              backgroundColor: "transparent",
+              fontFamily: FONT,
+              minWidth: 0,
+            }}
+          />
+          <button onClick={sendMessage} disabled={loading}
+            style={{
+              backgroundColor: loading ? "#d1d5db" : PURPLE,
+              border: "none", borderRadius: "50%",
+              width: accessibilityMode ? 38 : 32,
+              height: accessibilityMode ? 38 : 32,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: loading ? "not-allowed" : "pointer",
+              flexShrink: 0, transition: "background 0.2s",
+            }}>
+            <Send size={accessibilityMode ? 16 : 14} color="#fff" />
+          </button>
+        </div>
+      </div>
+
+      <div style={{
+        textAlign: "center", marginTop: 10,
+        fontFamily: FONT,
+        fontWeight: accessibilityMode ? 500 : 300,
+        fontSize: accessibilityMode ? 14 : 13,
+        color: accessibilityMode ? "#111827" : "#6b7280",
+        letterSpacing: "0.02em",
+      }}>
+        Uses Qwen 3-1.7B Model
+      </div>
+    </div>
+  );
+}
+
 export default function PersonaWeave() {
-  const [activeTab,        setActiveTab]        = useState("Settings");
-  const [activeRole,       setActiveRole]        = useState(ROLES[0]);
-  const [activePersona,    setActivePersona]     = useState("Defense Analyst");
-  const [temperature,      setTemperature]       = useState(0.5);
-  const [topP,             setTopP]              = useState(0.9);
-  const [conversations,    setConversations]     = useState([]);
-  const [activeChatId,     setActiveChatId]      = useState(null);
-  const [inputMsg,         setInputMsg]          = useState("");
-  const [loading,          setLoading]           = useState(false);
+  const [activeTab,         setActiveTab]        = useState("Settings");
+  const [activeRole,        setActiveRole]        = useState(ROLES[0]);
+  const [activePersona,     setActivePersona]     = useState("Defense Analyst");
+  const [temperature,       setTemperature]       = useState(0.5);
+  const [topP,              setTopP]              = useState(0.9);
+  const [conversations,     setConversations]     = useState([]);
+  const [activeChatId,      setActiveChatId]      = useState(null);
+  const [inputMsg,          setInputMsg]          = useState("");
+  const [loading,           setLoading]           = useState(false);
   const [accessibilityMode, setAccessibilityMode] = useState(false);
-  const [expandedRole,     setExpandedRole]      = useState(ROLES[0].name);
-  const [windowWidth,      setWindowWidth]       = useState(typeof window !== "undefined" ? window.innerWidth : 1280);
+  const [expandedRole,      setExpandedRole]      = useState(ROLES[0].name);
+  const [windowWidth,       setWindowWidth]       = useState(typeof window !== "undefined" ? window.innerWidth : 1280);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -233,26 +317,25 @@ export default function PersonaWeave() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  const isCompact = windowWidth < 1100;
-  const isMobile  = windowWidth < 768;
+  const isCompact    = windowWidth < 1100;
+  const isMobile     = windowWidth < 768;
   const sidebarWidth = isMobile ? 240 : isCompact ? 300 : 380;
 
-  // ── Accessibility theme ──
   const A11Y = {
-    sidebarBg:      accessibilityMode ? "#0f0a2a"               : DARK_BG,
-    cardBg:         accessibilityMode ? "rgba(255,255,255,0.08)" : "rgba(45,27,94,0.85)",
-    cardBgActive:   accessibilityMode ? "#7c3aed"               : PURPLE,
+    sidebarBg:      accessibilityMode ? "#0f0a2a"                          : DARK_BG,
+    cardBg:         accessibilityMode ? "rgba(255,255,255,0.08)"           : "rgba(45,27,94,0.85)",
+    cardBgActive:   accessibilityMode ? "#7c3aed"                          : PURPLE,
     cardBorder:     accessibilityMode ? "2px solid rgba(200,160,255,0.55)" : "2px solid transparent",
-    cardText:       accessibilityMode ? "#ffffff"               : "#fff",
-    cardSubText:    accessibilityMode ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.65)",
-    labelColor:     accessibilityMode ? "#e5d9ff"               : "#fff",
-    fontSize:       accessibilityMode ? 15                      : 14,
-    inputBg:        accessibilityMode ? "#ffffff"               : "#f9fafb",
-    inputBorder:    accessibilityMode ? "2px solid #7c3aed"     : "1px solid #e5e7eb",
-    historyBg:      accessibilityMode ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.07)",
+    cardText:       accessibilityMode ? "#ffffff"                          : "#fff",
+    cardSubText:    accessibilityMode ? "rgba(255,255,255,0.8)"            : "rgba(255,255,255,0.65)",
+    labelColor:     accessibilityMode ? "#e5d9ff"                          : "#fff",
+    fontSize:       accessibilityMode ? 15                                 : 14,
+    inputBg:        accessibilityMode ? "#ffffff"                          : "#f9fafb",
+    inputBorder:    accessibilityMode ? "2px solid #7c3aed"                : "1px solid #e5e7eb",
+    historyBg:      accessibilityMode ? "rgba(255,255,255,0.08)"           : "rgba(255,255,255,0.07)",
     historyBorder:  accessibilityMode ? "2px solid rgba(200,160,255,0.45)" : "2px solid transparent",
-    tabActiveBg:    accessibilityMode ? "#7c3aed"               : PURPLE,
-    bubbleFontSize: accessibilityMode ? 15                      : 14,
+    tabActiveBg:    accessibilityMode ? "#7c3aed"                          : PURPLE,
+    bubbleFontSize: accessibilityMode ? 15                                 : 14,
   };
 
   const activeChat = conversations.find(c => c.id === activeChatId) || null;
@@ -282,12 +365,10 @@ export default function PersonaWeave() {
     const role = ROLES.find(r => r.name === activeChat.role) || ROLES[0];
 
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("http://localhost:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
           system: role.systemPrompt,
           temperature,
           top_p: topP,
@@ -295,7 +376,7 @@ export default function PersonaWeave() {
         }),
       });
       const data  = await res.json();
-      const reply = data.content?.find(b => b.type === "text")?.text || "No response received.";
+      const reply = data.reply || "No response received.";
       setConversations(c => c.map(x => x.id === chatId
         ? { ...x, messages: [...truncated, { role: "assistant", content: reply }] }
         : x
@@ -348,12 +429,10 @@ export default function PersonaWeave() {
     const role = ROLES.find(r => r.name === (baseConvos.find(c => c.id === chatId)?.role || activePersona)) || ROLES[0];
 
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("http://localhost:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
           system: role.systemPrompt,
           temperature,
           top_p: topP,
@@ -361,7 +440,7 @@ export default function PersonaWeave() {
         }),
       });
       const data  = await res.json();
-      const reply = data.content?.find(b => b.type === "text")?.text || "No response received.";
+      const reply = data.reply || "No response received.";
       setConversations(c => c.map(x => x.id === chatId
         ? { ...x, messages: [...withUser, { role: "assistant", content: reply }] }
         : x
@@ -376,88 +455,11 @@ export default function PersonaWeave() {
     }
   }
 
-  function InputPanel() {
-    return (
-      <div style={{ padding: "14px 24px 20px", flexShrink: 0 }}>
-        <div style={{
-          backgroundColor: A11Y.inputBg,
-          border: A11Y.inputBorder,
-          borderRadius: 14,
-          padding: "16px 18px",
-        }}>
-          <Label>PERSONA SELECTION</Label>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-            {ROLES.map(r => {
-              const sel = activePersona === r.name;
-              return (
-                <button key={r.name}
-                  onClick={() => { setActivePersona(r.name); setActiveRole(ROLES.find(x => x.name === r.name)); }}
-                  style={{
-                    padding: accessibilityMode ? "9px 16px" : "7px 14px",
-                    borderRadius: 999,
-                    border: `${accessibilityMode ? "2px" : "1px"} solid ${sel ? PURPLE : (accessibilityMode ? "#9ca3af" : "#e5e7eb")}`,
-                    backgroundColor: sel ? PURPLE : "#fff",
-                    color: sel ? "#fff" : "#1f2937",
-                    fontWeight: 600,
-                    fontSize: A11Y.fontSize,
-                    cursor: "pointer",
-                    fontFamily: FONT,
-                    transition: "all 0.15s",
-                  }}>
-                  {r.name}
-                </button>
-              );
-            })}
-          </div>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 10,
-            backgroundColor: "#fff",
-            border: accessibilityMode ? "2px solid #d1d5db" : "1px solid #e5e7eb",
-            borderRadius: 999,
-            padding: "9px 14px",
-          }}>
-            <input
-              value={inputMsg}
-              onChange={e => setInputMsg(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && sendMessage()}
-              placeholder="How may we help you today?"
-              style={{
-                flex: 1, border: "none", outline: "none",
-                fontSize: A11Y.fontSize,
-                color: "#374151",
-                backgroundColor: "transparent",
-                fontFamily: FONT,
-                minWidth: 0,
-              }}
-            />
-            <button onClick={sendMessage} disabled={loading}
-              style={{
-                backgroundColor: loading ? "#d1d5db" : PURPLE,
-                border: "none", borderRadius: "50%",
-                width: accessibilityMode ? 38 : 32,
-                height: accessibilityMode ? 38 : 32,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: loading ? "not-allowed" : "pointer",
-                flexShrink: 0, transition: "background 0.2s",
-              }}>
-              <Send size={accessibilityMode ? 16 : 14} color="#fff" />
-            </button>
-          </div>
-        </div>
-
-        <div style={{
-          textAlign: "center", marginTop: 10,
-          fontFamily: FONT,
-          fontWeight: accessibilityMode ? 500 : 300,
-          fontSize: accessibilityMode ? 14 : 13,
-          color: accessibilityMode ? "#111827" : "#6b7280",
-          letterSpacing: "0.02em",
-        }}>
-          Uses Qwen 3-1.7B Model
-        </div>
-      </div>
-    );
-  }
+  const inputPanelProps = {
+    inputMsg, setInputMsg, sendMessage, loading,
+    activePersona, setActivePersona, setActiveRole,
+    accessibilityMode, A11Y,
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", fontFamily: FONT, backgroundColor: "#fff", overflow: "hidden" }}>
@@ -516,10 +518,7 @@ export default function PersonaWeave() {
             {/* ── HISTORY TAB ── */}
             {activeTab === "History" && (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingBottom: 20 }}>
-                <div style={{
-                  fontFamily: FONT, fontWeight: 700, fontSize: 13,
-                  letterSpacing: "0.12em", color: A11Y.labelColor, marginBottom: 14,
-                }}>
+                <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, letterSpacing: "0.12em", color: A11Y.labelColor, marginBottom: 14 }}>
                   CHAT HISTORY
                 </div>
                 <button
@@ -563,7 +562,7 @@ export default function PersonaWeave() {
                             transition: "all 0.15s",
                             display: "flex", flexDirection: "column", gap: 4,
                           }}>
-                          <div style={{ fontWeight: 700, fontSize: accessibilityMode ? 15 : 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <div style={{ fontWeight: 700, fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                             {c.title}
                           </div>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
@@ -587,10 +586,7 @@ export default function PersonaWeave() {
             {/* ── SETTINGS TAB ── */}
             {activeTab === "Settings" && (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingBottom: 28 }}>
-                <div style={{
-                  fontFamily: FONT, fontWeight: 700, fontSize: 13,
-                  letterSpacing: "0.12em", color: A11Y.labelColor, marginBottom: 14,
-                }}>
+                <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, letterSpacing: "0.12em", color: A11Y.labelColor, marginBottom: 14 }}>
                   PERSONA SELECTION
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -607,8 +603,6 @@ export default function PersonaWeave() {
                         overflow: "hidden",
                         transition: "border 0.15s, background 0.15s",
                       }}>
-
-                        {/* ── Card header (click to select + toggle) ── */}
                         <button
                           onClick={() => {
                             setActiveRole(role);
@@ -621,10 +615,6 @@ export default function PersonaWeave() {
                             background: "transparent", border: "none",
                             cursor: "pointer", textAlign: "left", position: "relative",
                           }}>
-
-
-
-                          {/* Chevron */}
                           <div style={{
                             position: "absolute", top: "50%", right: 12,
                             transform: `translateY(-50%) rotate(${isExpanded ? 180 : 0}deg)`,
@@ -634,20 +624,15 @@ export default function PersonaWeave() {
                           }}>
                             <ChevronDown size={16} strokeWidth={2} />
                           </div>
-
-                          {/* Icon circle */}
                           <div style={{ width: 46, height: 46, borderRadius: "50%", backgroundColor: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <Icon size={21} color={DARK_BG} strokeWidth={2} />
                           </div>
-
-                          {/* Name + short description */}
                           <div style={{ minWidth: 0, flex: 1, paddingRight: 28 }}>
                             <div style={{ color: A11Y.cardText, fontWeight: 700, fontSize: accessibilityMode ? 16 : 15, marginBottom: 3, fontFamily: FONT }}>{role.name}</div>
                             <div style={{ color: "rgba(255,255,255,0.92)", fontSize: accessibilityMode ? 13 : 12, lineHeight: 1.4, fontFamily: FONT }}>{role.description}</div>
                           </div>
                         </button>
 
-                        {/* ── Expanded dropdown body ── */}
                         <div style={{
                           maxHeight: isExpanded ? 260 : 0,
                           overflow: "hidden",
@@ -655,70 +640,36 @@ export default function PersonaWeave() {
                           backgroundColor: isActive ? "rgba(49,32,90,0.95)" : "rgba(49,32,90,0.5)",
                         }}>
                           <div style={{
-                            borderTop: accessibilityMode
-                              ? "1px solid rgba(255,255,255,0.25)"
-                              : "1px solid rgba(255,255,255,0.15)",
+                            borderTop: accessibilityMode ? "1px solid rgba(255,255,255,0.25)" : "1px solid rgba(255,255,255,0.15)",
                             margin: "0 14px",
                             padding: accessibilityMode ? "14px 0 16px" : "12px 0 14px",
                           }}>
-                            {/* Extended description */}
-                            <p style={{
-                              color: accessibilityMode ? "#ffffff" : "rgba(255,255,255,0.92)",
-                              fontSize: accessibilityMode ? 13 : 12,
-                              lineHeight: 1.65,
-                              fontFamily: FONT,
-                              margin: "0 0 12px",
-                            }}>
+                            <p style={{ color: accessibilityMode ? "#ffffff" : "rgba(255,255,255,0.92)", fontSize: accessibilityMode ? 13 : 12, lineHeight: 1.65, fontFamily: FONT, margin: "0 0 12px" }}>
                               {role.extendedDescription}
                             </p>
-
-                            {/* Tags */}
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                               {role.tags.map(tag => (
                                 <span key={tag} style={{
-                                  padding: "3px 10px",
-                                  borderRadius: 999,
+                                  padding: "3px 10px", borderRadius: 999,
                                   backgroundColor: "rgba(255,255,255,0.12)",
                                   border: accessibilityMode ? "1px solid rgba(255,255,255,0.35)" : "1px solid rgba(255,255,255,0.15)",
                                   color: accessibilityMode ? "#fff" : "rgba(255,255,255,0.9)",
                                   fontSize: accessibilityMode ? 12 : 11,
-                                  fontFamily: FONT,
-                                  fontWeight: 500,
-                                  letterSpacing: "0.02em",
-                                  textTransform: "capitalize",
+                                  fontFamily: FONT, fontWeight: 500,
+                                  letterSpacing: "0.02em", textTransform: "capitalize",
                                 }}>
                                   {tag}
                                 </span>
                               ))}
                             </div>
-
-                            {/* Tone indicator */}
                             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                              <span style={{
-                                color: accessibilityMode ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.45)",
-                                fontSize: accessibilityMode ? 12 : 11,
-                                fontFamily: FONT,
-                                letterSpacing: "0.06em",
-                                fontWeight: 600,
-                              }}>
-                                TONE
-                              </span>
-                              <span style={{
-                                padding: "2px 10px",
-                                borderRadius: 999,
-                                backgroundColor: isActive ? "rgba(255,255,255,0.2)" : "rgba(160,32,160,0.35)",
-                                color: "#fff",
-                                fontSize: accessibilityMode ? 12 : 11,
-                                fontFamily: FONT,
-                                fontWeight: 700,
-                                letterSpacing: "0.04em",
-                              }}>
+                              <span style={{ color: accessibilityMode ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.45)", fontSize: accessibilityMode ? 12 : 11, fontFamily: FONT, letterSpacing: "0.06em", fontWeight: 600 }}>TONE</span>
+                              <span style={{ padding: "2px 10px", borderRadius: 999, backgroundColor: isActive ? "rgba(255,255,255,0.2)" : "rgba(160,32,160,0.35)", color: "#fff", fontSize: accessibilityMode ? 12 : 11, fontFamily: FONT, fontWeight: 700, letterSpacing: "0.04em" }}>
                                 {role.tone}
                               </span>
                             </div>
                           </div>
                         </div>
-
                       </div>
                     );
                   })}
@@ -726,27 +677,18 @@ export default function PersonaWeave() {
 
                 {/* ── Accessibility Toggle ── */}
                 <div style={{ marginTop: 28 }}>
-                  <div style={{
-                    fontFamily: FONT, fontWeight: 700, fontSize: 13,
-                    letterSpacing: "0.12em", color: A11Y.labelColor, marginBottom: 14,
-                  }}>
+                  <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, letterSpacing: "0.12em", color: A11Y.labelColor, marginBottom: 14 }}>
                     ACCESSIBILITY
                   </div>
                   <div style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    gap: 12,
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
                     backgroundColor: accessibilityMode ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.05)",
                     border: accessibilityMode ? "2px solid rgba(200,160,255,0.45)" : "2px solid transparent",
-                    borderRadius: 15,
-                    padding: "14px 16px",
+                    borderRadius: 15, padding: "14px 16px",
                   }}>
                     <div>
-                      <div style={{ color: "#fff", fontWeight: 700, fontSize: accessibilityMode ? 15 : 14, fontFamily: FONT }}>
-                        Accessibility Friendly
-                      </div>
-                      <div style={{ color: A11Y.cardSubText, fontSize: accessibilityMode ? 13 : 12, fontFamily: FONT, marginTop: 3 }}>
-                        High contrast, larger text
-                      </div>
+                      <div style={{ color: "#fff", fontWeight: 700, fontSize: accessibilityMode ? 15 : 14, fontFamily: FONT }}>Accessibility Friendly</div>
+                      <div style={{ color: A11Y.cardSubText, fontSize: accessibilityMode ? 13 : 12, fontFamily: FONT, marginTop: 3 }}>High contrast, larger text</div>
                     </div>
                     <label style={{ position: "relative", width: 50, height: 28, flexShrink: 0, cursor: "pointer" }}>
                       <input
@@ -762,13 +704,10 @@ export default function PersonaWeave() {
                         border: "2px solid rgba(255,255,255,0.2)",
                       }}>
                         <span style={{
-                          position: "absolute",
-                          top: 3,
+                          position: "absolute", top: 3,
                           left: accessibilityMode ? 24 : 3,
-                          width: 18, height: 18,
-                          borderRadius: "50%",
-                          backgroundColor: "#fff",
-                          transition: "left 0.2s",
+                          width: 18, height: 18, borderRadius: "50%",
+                          backgroundColor: "#fff", transition: "left 0.2s",
                           boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
                         }} />
                       </span>
@@ -785,20 +724,11 @@ export default function PersonaWeave() {
 
         {/* ══ MAIN ══ */}
         <main style={{ flex: 1, display: "flex", flexDirection: "column", backgroundColor: "#fff", overflow: "hidden", minWidth: 0 }}>
-
           {activeChat ? (
             <>
-              <div style={{
-                padding: "18px 28px 14px",
-                borderBottom: accessibilityMode ? "2px solid #f0f0f0" : "1px solid #f0f0f0",
-                flexShrink: 0,
-              }}>
+              <div style={{ padding: "18px 28px 14px", borderBottom: accessibilityMode ? "2px solid #f0f0f0" : "1px solid #f0f0f0", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <img
-                    src="/airplane.png"
-                    alt="Persona Weave"
-                    style={{ width: 50, height: 50, objectFit: "contain", flexShrink: 0 }}
-                  />
+                  <img src="/airplane.png" alt="Persona Weave" style={{ width: 50, height: 50, objectFit: "contain", flexShrink: 0 }} />
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: accessibilityMode ? 22 : 20, fontWeight: 700, color: "#111827", fontFamily: FONT }}>Hello, User!</div>
                     <div style={{ fontSize: accessibilityMode ? 14 : 13, color: "#6b7280", display: "flex", alignItems: "center", gap: 6, marginTop: 2, fontFamily: FONT, flexWrap: "wrap" }}>
@@ -828,21 +758,16 @@ export default function PersonaWeave() {
                 <div ref={bottomRef} />
               </div>
 
-              <InputPanel />
+              <InputPanel {...inputPanelProps} />
             </>
           ) : (
             <>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px", textAlign: "center" }}>
-                <img
-                  src="/airplane.png"
-                  alt="Persona Weave"
-                  style={{ width: 111, height: 111, marginBottom: 22, objectFit: "contain" }}
-                />
+                <img src="/airplane.png" alt="Persona Weave" style={{ width: 111, height: 111, marginBottom: 22, objectFit: "contain" }} />
                 <h1 style={{ fontSize: accessibilityMode ? 44 : 40, fontWeight: 700, color: "#111827", margin: "0 0 8px", fontFamily: FONT }}>Hello, User!</h1>
                 <p style={{ fontSize: accessibilityMode ? 19 : 17, color: "#6b7280", margin: 0, fontFamily: FONT }}>Welcome to Persona Weave.</p>
               </div>
-
-              <InputPanel />
+              <InputPanel {...inputPanelProps} />
             </>
           )}
         </main>
