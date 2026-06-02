@@ -21,12 +21,14 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat(req: ChatRequest):
     payload = {
-        "model": "persona-weave",
+        "model": "llama3.2",
         "stream": False,
         "options": {
             "temperature": req.temperature,
             "top_p": req.top_p,
-            "num_predict": 150,        # limit tokens for speed
+            "num_predict": 150,
+            "repeat_penalty": 1.5,
+            "repeat_last_n": 64,
         },
         "messages": [
             {"role": "system", "content": req.system},
