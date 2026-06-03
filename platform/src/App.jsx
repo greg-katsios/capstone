@@ -41,7 +41,7 @@ const ROLES = [
     tone: "Formal",
     extendedDescription: "Built for corporate trainers, military instructors, and emergency response educators who need consistent personas for repeated high-pressure simulations. Delivers structured, realistic scenarios so trainees can build competency without real-world risk.",
     tags: ["Military training", "Corporate drills", "Emergency response"],
-    systemPrompt: "You are Alex, a senior defense analyst with 15 years of experience in threat intelligence and strategic operations. Respond the way a real expert would in conversation — direct, confident, occasionally using field jargon naturally. You think out loud, sometimes catch yourself, and respond like a person not a report.",
+    systemPrompt: "You are Alex, a senior defense analyst with 15 years of experience in threat intelligence and strategic operations. Respond the way a real expert would in conversation — direct, confident, occasionally using field jargon naturally. You think out loud, sometimes catch yourself, and respond like a person not a report. Never use action statements or stage directions in parentheses or asterisks. Only speak in plain dialogue.",
   },
   {
     name: "Behavior Researcher",
@@ -50,7 +50,7 @@ const ROLES = [
     tone: "Analytical",
     extendedDescription: "Designed for psychologists, behavioral scientists, and academic researchers who study how people react under stress or uncertainty. Replaces risky real-world experiments with controlled, repeatable simulations that surface genuine behavioral patterns safely.",
     tags: ["Stress response", "Controlled simulation", "Academic research"],
-    systemPrompt: "You are Dr. Morgan, a behavioral scientist who studies stress response and decision-making under pressure. You speak like a real researcher — curious, a little obsessive about nuance, and you naturally reference your own past studies or observations. You engage like you're having a conversation with a peer, not writing a paper.",
+    systemPrompt: "You are Dr. Morgan, a behavioral scientist who studies stress response and decision-making under pressure. You speak like a real researcher — curious, a little obsessive about nuance, and you naturally reference your own past studies or observations. You engage like you're having a conversation with a peer, not writing a paper. Never use action statements or stage directions in parentheses or asterisks. Only speak in plain dialogue.",
   },
   {
     name: "Crisis Strategist",
@@ -59,7 +59,7 @@ const ROLES = [
     tone: "Direct",
     extendedDescription: "Built for journalists and PR strategists who need to practice under fire. Simulates hostile press briefings, adversarial interviews, and reputation-crisis scenarios at scale. Presents a believable spokesperson persona so practitioners can sharpen their message control before it counts.",
     tags: ["Press briefings", "Reputation crisis", "Media training"],
-    systemPrompt: "You are Jamie, a crisis communications veteran who has managed PR disasters for Fortune 500 companies and politicians. You talk like someone who has been in the room when things go sideways — blunt, a little cynical, but deeply practical. You give real talk, not textbook advice, and you're not afraid to say what everyone else is thinking.",
+    systemPrompt: "You are Jamie, a crisis communications veteran who has managed PR disasters for Fortune 500 companies and politicians. You talk like someone who has been in the room when things go sideways — blunt, a little cynical, but deeply practical. You give real talk, not textbook advice, and you're not afraid to say what everyone else is thinking. Never use action statements or stage directions in parentheses or asterisks. Only speak in plain dialogue.",
   },
   {
     name: "Therapy Trainer",
@@ -68,7 +68,7 @@ const ROLES = [
     tone: "Empathetic",
     extendedDescription: "Designed for mental health counselors and therapists in training. Simulates supportive, non-judgmental conversations to practice de-escalation, active listening, and boundary-setting. Use case without involving real clients or exposing trainees to uncontrolled emotional risk.",
     tags: ["De-escalation", "Active listening", "Boundary-setting"],
-    systemPrompt: "You are Sam, a licensed therapist with a background in trauma-informed care and de-escalation. You respond the way a real therapist does in session — warm, unhurried, genuinely curious about the person in front of you. You reflect, ask follow-up questions, and never rush to a solution. You speak like a human who has sat with a lot of pain.",
+    systemPrompt: "You are Sam, a licensed therapist with a background in trauma-informed care and de-escalation. You respond the way a real therapist does in session — warm, unhurried, genuinely curious about the person in front of you. You reflect, ask follow-up questions, and never rush to a solution. You speak like a human who has sat with a lot of pain. Never use action statements, stage directions, or descriptions of physical actions in parentheses or asterisks (e.g. do not write things like \"(leaning forward)\" or \"*nods*\"). Only speak in plain dialogue.",
   },
 ];
 
@@ -213,7 +213,7 @@ function Bubble({ msg, RoleIcon, onRetry, onFeedback, fontSize }) {
 }
 
 /* ── InputPanel lifted outside PersonaWeave to prevent remount on every keystroke ── */
-function InputPanel({ inputMsg, setInputMsg, sendMessage, loading, activePersona, setActivePersona, setActiveRole, accessibilityMode, A11Y }) {
+function InputPanel({ inputMsg, setInputMsg, sendMessage, loading, activePersona, onPersonaChange, accessibilityMode, A11Y }) {
   return (
     <div style={{ padding: "14px 24px 20px", flexShrink: 0 }}>
       <div style={{
@@ -228,7 +228,7 @@ function InputPanel({ inputMsg, setInputMsg, sendMessage, loading, activePersona
             const sel = activePersona === r.name;
             return (
               <button key={r.name}
-                onClick={() => { setActivePersona(r.name); setActiveRole(ROLES.find(x => x.name === r.name)); }}
+                onClick={() => onPersonaChange(r.name)}
                 style={{
                   padding: accessibilityMode ? "9px 16px" : "7px 14px",
                   borderRadius: 999,
@@ -346,6 +346,21 @@ export default function PersonaWeave() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeChat?.messages?.length]);
 
+  useEffect(() => {
+    if (activeChat) {
+      setActivePersona(activeChat.role);
+      setActiveRole(ROLES.find(r => r.name === activeChat.role) || ROLES[0]);
+    }
+  }, [activeChatId]);
+
+  function handlePersonaChange(name) {
+    setActivePersona(name);
+    setActiveRole(ROLES.find(r => r.name === name) || ROLES[0]);
+    if (activeChatId) {
+      setConversations(c => c.map(x => x.id === activeChatId ? { ...x, role: name } : x));
+    }
+  }
+
   async function retryMessage(assistantIndex) {
     if (loading || !activeChat) return;
     const userIndex = assistantIndex - 1;
@@ -426,7 +441,7 @@ export default function PersonaWeave() {
     ));
     setLoading(true);
 
-    const role = ROLES.find(r => r.name === (baseConvos.find(c => c.id === chatId)?.role || activePersona)) || ROLES[0];
+    const role = ROLES.find(r => r.name === activePersona) || ROLES[0];
 
     try {
       const res = await fetch("http://localhost:8000/chat", {
@@ -457,7 +472,7 @@ export default function PersonaWeave() {
 
   const inputPanelProps = {
     inputMsg, setInputMsg, sendMessage, loading,
-    activePersona, setActivePersona, setActiveRole,
+    activePersona, onPersonaChange: handlePersonaChange,
     accessibilityMode, A11Y,
   };
 
